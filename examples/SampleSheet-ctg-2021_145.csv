@@ -2,7 +2,7 @@
 Pipeline,ctg-rnaseq,,,,,,,,,,,,,,,,,,,,,,,,
 PipelineVersion,2.1.5,,,,,,,,,,,,,,,,,,,,,,,,
 PipelineProfile,rnaseq_total,,,,,,,,,,,,,,,,,,,,,,,,
-RunFolder,ctg-parse-samplesheet,,,,,,,,,,,,,,,,,,,,,,,,
+RunFolder,examples,,,,,,,,,,,,,,,,,,,,,,,,
 ProjectId,2021_145,,,,,,,,,,,,,,,,,,,,,,,,
 PoolName,CTGpool_0174,,,,,,,,,,,,,,,,,,,,,,,,
 Instrument Type,NovaSeq1.5,,,,,,,,,,,,,,,,,,,,,,,,

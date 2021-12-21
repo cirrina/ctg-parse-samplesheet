@@ -126,6 +126,7 @@ for col in ['Sample_Name', 'Sample_ID', 'Sample_Project']:
 
 
 
+
 ## Add .fastq & .bam file names to main DF
 # FASTQ files are named by blc2fastq with the following logic:
 # **{samplename}\_{S1}\_{L001}\_{R1}\_001.fastq.gz**
@@ -169,6 +170,38 @@ all_projects = set(dfs.keys()) # set with all projects
 
 
 
+## Check if any duplicated sample_ids exits. Duplicates are accepted if same project but different Lanes
+#if "Lane" in df.columns:
+# for row in df
+if "Lane" not in df.columns:
+    sid = df['Sample_ID'].map(str) + '  ' + df['Sample_Project'].map(str)
+    seen = set()
+    dupes = [x for x in sid if x in seen or seen.add(x)]
+    if dupes:
+        print('Duplicate(s) detected:')
+        print(dupes)
+        print('')
+        raise ValueError('Duplicate sample names detected - not allowed if not multiple lanes !!' )
+elif len(all_projects)==1:
+    sid = df['Lane'].map(str) + '  ' + df['Sample_ID'].map(str)
+    seen = set()
+    dupes = [x for x in sid if x in seen or seen.add(x)]
+    if dupes:
+        print('Duplicate(s) detected:')
+        print(dupes)
+        print('')
+        raise ValueError('Duplicate sample names detected wihtin a lane - not allowed !!' )
+elif len(all_projects) >1 :
+    sid = df['Sample_ID'].map(str)
+    seen = set()
+    dupes = [x for x in sid if x in seen or seen.add(x)]
+    if dupes:
+        print('Duplicate(s) detected:')
+        print(dupes)
+        print('')
+        raise ValueError('Duplicate sample names detected - refrain from using same Sample IDs for projects on one flowcell' )
+
+
 
 #  Write Sample Sheets
 # =====================================================
@@ -179,7 +212,7 @@ all_projects = set(dfs.keys()) # set with all projects
 sheet_out = f'SampleSheet-demux-{global_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
 fh_out = open(sheet_out,'w', encoding='utf-8')
 # create the csv writer
-writer = csv.writer(fh_out)
+writer = csv.writer(fh_out, lineterminator='\n')
 print(f'... writing demux specific samplesheet:  {sheet_out}')
 
 for s in sectionDict.keys():
@@ -243,7 +276,7 @@ for project in all_projects:
     project_out = f'SampleSheet-ctg-{project}.csv'
     print(f'... writing project specific samplesheet:  {project_out}')
     fh_out = open(project_out,'w', encoding='utf-8')
-    writer = csv.writer(fh_out)
+    writer = csv.writer(fh_out, lineterminator='\n')
     for s in sectionDict.keys():
         if s == '[Header]':
             headerrow = ['']*n_columns
