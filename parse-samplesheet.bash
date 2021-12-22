@@ -3,11 +3,14 @@
 echo " ----------------------- "
 echo " ctg SampleSheet Parser  "
 echo " ----------------------- "
-echo " parses & checks samplesheet into demux-ready sheet to use with ctg-demux script"
-echo " ... running"
-source ~/miniconda3/etc/profile.d/conda.sh
-# conda init bash
-echo " Running python script: parse-sampelsheet.py"
+echo " check & parse samplesheet into demux-ready sheet - to use with ctg-demux script"
+
+
+## Uncomment two lines below to run python shell script on local machine macOS
+# source ~/miniconda3/etc/profile.d/conda.sh ## Needed to run at local
+# conda activate ctg-parse-samplesheet
+# conda init bash # not needed
+
 
 
 
@@ -64,6 +67,6 @@ fi
 
 ### Exec python script
 scriptdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-conda activate ctg-parse-samplesheet
 # python --version
+echo " ... running python script: parse-sampelsheet.py"
 python ${scriptdir}/parse-samplesheet.py ${samplesheet}
