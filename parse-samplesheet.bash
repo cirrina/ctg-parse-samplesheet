@@ -7,11 +7,8 @@ echo " check & parse samplesheet into demux-ready sheet - to use with ctg-demux 
 
 
 ## Uncomment two lines below to run python shell script on local machine macOS
-# source ~/miniconda3/etc/profile.d/conda.sh ## Needed to run at local
-# conda activate ctg-parse-samplesheet
-# conda init bash # not needed
-
-
+source ~/miniconda3/etc/profile.d/conda.sh ## Needed to run at local
+conda activate ctg-parse-samplesheet
 
 
 # usage message
