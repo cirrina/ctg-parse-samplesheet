@@ -66,4 +66,7 @@ fi
 scriptdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # python --version
 echo " ... running python script: parse-sampelsheet.py"
-python ${scriptdir}/parse-samplesheet.py ${samplesheet}
+# python ${scriptdir}/parse-samplesheet.py ${samplesheet} ## to run local
+singularity exec --bind \
+    /projects/fs1/ /projects/fs1/shared/ctg-containers/ctg-parse-samplesheet/singularity-ctg-samplesheet-1.1.sif \
+    python ${scriptdir}/parse-samplesheet.py ${samplesheet}
