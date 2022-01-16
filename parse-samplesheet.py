@@ -141,6 +141,7 @@ for col in ['Sample_Name', 'Sample_ID', 'Sample_Project']:
 ## Add .fastq & .bam file names to main DF
 # FASTQ files are named by blc2fastq with the following logic:
 # **{samplename}\_{S1}\_{L001}\_{R1}\_001.fastq.gz**
+# Using the 'noLaneSplitting' flag, L001 will NOT be in fastq name
 # Requres that the global 'Paired' parameter is defined in [Header] section
 # The first read (R1) is always in column fastq_1. If paired sequencing, R2 will be added in the fastq_2 column
 if fastq_suffix:
@@ -151,8 +152,8 @@ if fastq_suffix:
     fastq_1 = []
     fastq_2 = []
     for sample_id in df["Sample_ID"].tolist():
-        fastq_1.append(f'{sample_id}_S{row_i+1}_L001_R1_{fastq_suffix}')
-        fastq_2.append(f'{sample_id}_S{row_i+1}_L001_R2_{fastq_suffix}')
+        fastq_1.append(f'{sample_id}_S{row_i+1}_R1{fastq_suffix}') # fastq_1.append(f'{sample_id}_S{row_i+1}_L001_R1_{fastq_suffix}')
+        fastq_2.append(f'{sample_id}_S{row_i+1}_R2{fastq_suffix}') # fastq_2.append(f'{sample_id}_S{row_i+1}_L001_R2_{fastq_suffix}')
         row_i+=1
     df["fastq_1"] = fastq_1
     if(header_paired in ['true','True']):

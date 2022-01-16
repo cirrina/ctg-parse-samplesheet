@@ -40,9 +40,9 @@ while getopts ":s:" opt; do
       h) exit_abnormal
         ;;
       \?) echo echo ""; echo "Error:";"Invalid option -$OPTARG" >&2
-        exit_abnormal ;;
+        exit 1 ;;
       :) echo ""; echo "Error:"; echo " -${OPTARG} requires an argument!"
-	     exit_abnormal ;;
+	      exit 1 ;;
     esac
 done
 
@@ -53,13 +53,13 @@ shift "$(( OPTIND -1 ))"
 if [ -z $samplesheet ]; then
   echo ""; echo ""; echo "Error:"
   echo "You must specify samplesheet: '-s' flag. "; echo ""
-  exit_abnormal
+  exit 1
 fi
 if [ ! -f $samplesheet ]; then
   echo ""; echo ""; echo "Error:"
   echo "SampleSheet does not exist"
   #echo "- Please specify correct samplesheet, or create a CTG_SampleSheet.csv in current runfolder"
-  exit_abnormal
+  exit 1
 fi
 
 ### Exec python script
