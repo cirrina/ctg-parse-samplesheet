@@ -4,7 +4,7 @@ echo " ----------------------- "
 echo " ctg SampleSheet Parser  "
 echo " ----------------------- "
 echo " check & parse samplesheet into demux-ready sheet - to use with ctg-demux script"
-
+singularity_contatiner="/projects/fs1/shared/ctg-containers/ctg-parse-samplesheet/singularity-ctg-samplesheet-1.x.sif"
 
 ## Uncomment two lines below to run python shell script on local machine macOS
 #source ~/miniconda3/etc/profile.d/conda.sh ## Needed to run at local
@@ -68,5 +68,5 @@ scriptdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 echo " ... running python script: parse-sampelsheet.py"
 # python ${scriptdir}/parse-samplesheet.py ${samplesheet} ## to run local
 singularity exec --bind \
-    /projects/fs1/ /projects/fs1/shared/ctg-containers/ctg-parse-samplesheet/singularity-ctg-samplesheet-1.1.sif \
+    /projects/fs1/ ${singularity_contatiner} \
     python ${scriptdir}/parse-samplesheet.py ${samplesheet}

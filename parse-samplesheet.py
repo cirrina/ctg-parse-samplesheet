@@ -297,7 +297,7 @@ for s in sectionDict.keys():
 #        - PipelineProfile
 
 for project in all_projects:
-    project_out = f'SampleSheet-ctg-{project}.csv'
+    project_out = f'SampleSheet-ctg-rnaseq-{project}.csv'
     print(f'... writing project specific samplesheet:  {project_out}')
     fh_out = open(project_out,'w', encoding='utf-8')
     writer = csv.writer(fh_out, lineterminator='\n')

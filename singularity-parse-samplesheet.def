@@ -1,0 +1,35 @@
+Bootstrap:docker
+From:nfcore/base
+
+
+%environment
+    PATH=/opt/:/usr/bin:/usr/local/bin:/opt/conda/bin/:$PATH
+    source /opt/conda/etc/profile.d/conda.sh
+    conda activate ctg-parse-samplesheet
+    # /opt/conda/envs/ctg-samplesheet
+
+%files
+  environment.yml
+
+%post
+
+    rm -rf /var/lib/apt/lists/*
+    apt -y clean
+    apt-get -y update
+
+    apt-get -y install locales apt-utils curl libz-dev build-essential gettext cmake libxml2-dev make libcurl4-ope\
+nss\
+l-dev libssl-dev libbz2-dev libboost-dev libtbb2 sudo tree
+
+    conda env create -f environment.yml
+
+    apt-get -y clean
+    rm -rf /var/lib/apt/lists/*
+
+%test
+#  source /opt/conda/etc/profile.d/conda.sh
+
+
+%runscript
+  python --version
+  source /opt/conda/etc/profile.d/conda.sh
