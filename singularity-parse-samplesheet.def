@@ -17,9 +17,7 @@ From:nfcore/base
     apt -y clean
     apt-get -y update
 
-    apt-get -y install locales apt-utils curl libz-dev build-essential gettext cmake libxml2-dev make libcurl4-ope\
-nss\
-l-dev libssl-dev libbz2-dev libboost-dev libtbb2 sudo tree
+    apt-get -y install locales apt-utils curl libz-dev build-essential gettext cmake libxml2-dev make libcurl4-openssl-dev libssl-dev libbz2-dev libboost-dev libtbb2 sudo tree
 
     conda env create -f environment.yml
 
