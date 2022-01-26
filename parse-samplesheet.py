@@ -319,23 +319,23 @@ for project in all_projects:
                 # e.g. params that may have been different inbetween projects, from 'multiple' to a unique shared value
                 if current_row[0]=='Species':
                     if 'Species' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Species'].unique()== 1):
+                        if len(dfs[project]['Species'].unique())== 1:
                             current_row[1] = dfs[project]['Species'].tolist()[0]
                 if current_row[0]=='PipelineProfile':
                     if 'pipeline_profile' in dfs[project].columns.tolist():
-                        if len(dfs[project]['pipeline_profile'].unique()== 1):
+                        if len(dfs[project]['pipeline_profile'].unique())== 1:
                             current_row[1] = dfs[project]['pipeline_profile'].tolist()[0]
                 if current_row[0]=='PoolName':
                     if 'Sample_Pool' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Sample_Pool'].unique()== 1):
+                        if len(dfs[project]['Sample_Pool'].unique())== 1:
                             current_row[1] = dfs[project]['Sample_Pool'].tolist()[0]
                 if current_row[0]=='Assay':
                     if 'Assay' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Assay'].unique()== 1):
+                        if len(dfs[project]['Assay'].unique())== 1:
                             current_row[1] = dfs[project]['Assay'].tolist()[0]
                 if current_row[0]=='Strandness':
                     if 'Strandness' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Strandness'].unique()== 1):
+                        if len(dfs[project]['Strandness'].unique())== 1:
                             current_row[1] = dfs[project]['Strandness'].tolist()[0]
                 ## Write row to file
                 if not all(elem == '' for elem in current_row):
