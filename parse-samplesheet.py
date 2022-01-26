@@ -312,7 +312,7 @@ for project in all_projects:
                 current_row[0] = sectionDict[s][row][0]
                 current_row[1] = sectionDict[s][row][1]
                 if current_row[0]=='ProjectId':
-                    current_row[1]==project # replace project slot with current project (e.g. from 'multiple' to this project)
+                    current_row[1] = project # replace project slot with current project (e.g. from 'multiple' to this project)
 
                 ## Check & replace [Header] parameters
                 ## ---------------------------
@@ -321,10 +321,10 @@ for project in all_projects:
                     if 'Species' in dfs[project].columns.tolist():
                         if len(dfs[project]['Species'].unique()== 1):
                             current_row[1] = dfs[project]['Species'].tolist()[0]
-                if current_row[0]=='ProjectProfile':
-                    if 'ProjectProfile' in dfs[project].columns.tolist():
-                        if len(dfs[project]['ProjectProfile'].unique()== 1):
-                            current_row[1] = dfs[project]['ProjectProfile'].tolist()[0]
+                if current_row[0]=='PipelineProfile':
+                    if 'PipelineProfile' in dfs[project].columns.tolist():
+                        if len(dfs[project]['PipelineProfile'].unique()== 1):
+                            current_row[1] = dfs[project]['PipelineProfile'].tolist()[0]
                 if current_row[0]=='PoolName':
                     if 'PoolName' in dfs[project].columns.tolist():
                         if len(dfs[project]['PoolName'].unique()== 1):
