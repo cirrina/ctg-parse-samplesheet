@@ -353,14 +353,14 @@ for project in all_projects:
                     if 'Assay' in dfs[project].columns.tolist():
                         if len(dfs[project]['Assay'].unique())== 1:
                             current_row[1] = dfs[project]['Assay'].tolist()[0]
-                if current_row[0]=='Fragmentation Time':
-                    if 'FragmentationTime' in dfs[project].columns.tolist():
-                        if len(dfs[project]['FragmentationTime'].unique())== 1:
-                            current_row[1] = dfs[project]['FragmentationTime'].tolist()[0]
-                if current_row[0]=='PCR Cycles':
-                    if 'PCR_Cycles' in dfs[project].columns.tolist():
-                        if len(dfs[project]['PCR_Cycles'].unique())== 1:
-                            current_row[1] = dfs[project]['PCR_Cycles'].tolist()[0]
+                if current_row[0]=='fragmentation_time':
+                    if 'fragmentation_time' in dfs[project].columns.tolist():
+                        if len(dfs[project]['fragmentation_time'].unique())== 1:
+                            current_row[1] = dfs[project]['fragmentation_time'].tolist()[0]
+                if current_row[0]=='pcr_cycles':
+                    if 'pcr_cycles' in dfs[project].columns.tolist():
+                        if len(dfs[project]['pcr_cycles'].unique())== 1:
+                            current_row[1] = dfs[project]['pcr_cycles'].tolist()[0]
                 if current_row[0]=='Strandness':
                     if 'Strandness' in dfs[project].columns.tolist():
                         if len(dfs[project]['Strandness'].unique())== 1:
