@@ -317,14 +317,11 @@ for project in all_projects:
                 ## Check & replace [Header] parameters
                 ## ---------------------------
                 # e.g. params that may have been different inbetween projects, from 'multiple' to a unique shared value
-                if current_row[0]=='Project Title':
-                    if 'ProjectTitle' in dfs[project].columns.tolist():
-                        if len(dfs[project]['ProjectTitle'].unique())== 1:
-                            current_row[1] = dfs[project]['ProjectTitle'].tolist()[0]
-                if current_row[0]=='Primary Investigator':
-                    if 'PrimaryInvestigator' in dfs[project].columns.tolist():
-                        if len(dfs[project]['PrimaryInvestigator'].unique())== 1:
-                            current_row[1] = dfs[project]['PrimaryInvestigator'].tolist()[0]
+                
+                if current_row[0]=='name_pi':
+                    if 'name_pi' in dfs[project].columns.tolist():
+                        if len(dfs[project]['name_pi'].unique())== 1:
+                            current_row[1] = dfs[project]['name_pi'].tolist()[0]
                 if current_row[0]=='email':
                     if 'email' in dfs[project].columns.tolist():
                         if len(dfs[project]['email'].unique())== 1:
