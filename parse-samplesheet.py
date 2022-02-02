@@ -291,7 +291,7 @@ for s in sectionDict.keys():
 #   - Name: samplesheet-ctg-YYYY.csv
 #   - When writing these individual samplesheets update metadata (may have gone from 'multiple' to unique)
 #        - RunFolder
-#        - ProjectId
+#        - ProjectID
 #        - PoolName
 #        - Species
 #        - PipelineProfile
@@ -311,16 +311,36 @@ for project in all_projects:
                 current_row = ['']*n_columns
                 current_row[0] = sectionDict[s][row][0]
                 current_row[1] = sectionDict[s][row][1]
-                if current_row[0]=='ProjectId':
+                if current_row[0]=='ProjectID':
                     current_row[1] = project # replace project slot with current project (e.g. from 'multiple' to this project)
 
                 ## Check & replace [Header] parameters
                 ## ---------------------------
                 # e.g. params that may have been different inbetween projects, from 'multiple' to a unique shared value
+                if current_row[0]=='Project Title':
+                    if 'ProjectTitle' in dfs[project].columns.tolist():
+                        if len(dfs[project]['ProjectTitle'].unique())== 1:
+                            current_row[1] = dfs[project]['ProjectTitle'].tolist()[0]
+                if current_row[0]=='Primary Investigator':
+                    if 'PrimaryInvestigator' in dfs[project].columns.tolist():
+                        if len(dfs[project]['PrimaryInvestigator'].unique())== 1:
+                            current_row[1] = dfs[project]['PrimaryInvestigator'].tolist()[0]
+                if current_row[0]=='email':
+                    if 'email' in dfs[project].columns.tolist():
+                        if len(dfs[project]['email'].unique())== 1:
+                            current_row[1] = dfs[project]['email'].tolist()[0]
                 if current_row[0]=='Species':
                     if 'Species' in dfs[project].columns.tolist():
                         if len(dfs[project]['Species'].unique())== 1:
                             current_row[1] = dfs[project]['Species'].tolist()[0]
+                if current_row[0]=='PipelineName':
+                    if 'PipelineName' in dfs[project].columns.tolist():
+                        if len(dfs[project]['PipelineName'].unique())== 1:
+                            current_row[1] = dfs[project]['PipelineName'].tolist()[0]
+                if current_row[0]=='PipelineVersion':
+                    if 'PipelineVersion' in dfs[project].columns.tolist():
+                        if len(dfs[project]['PipelineVersion'].unique())== 1:
+                            current_row[1] = dfs[project]['PipelineVersion'].tolist()[0]
                 if current_row[0]=='PipelineProfile':
                     if 'PipelineProfile' in dfs[project].columns.tolist():
                         if len(dfs[project]['PipelineProfile'].unique())== 1:
@@ -333,10 +353,22 @@ for project in all_projects:
                     if 'Assay' in dfs[project].columns.tolist():
                         if len(dfs[project]['Assay'].unique())== 1:
                             current_row[1] = dfs[project]['Assay'].tolist()[0]
+                if current_row[0]=='Fragmentation Time':
+                    if 'FragmentationTime' in dfs[project].columns.tolist():
+                        if len(dfs[project]['FragmentationTime'].unique())== 1:
+                            current_row[1] = dfs[project]['FragmentationTime'].tolist()[0]
+                if current_row[0]=='PCR Cycles':
+                    if 'PCR_Cycles' in dfs[project].columns.tolist():
+                        if len(dfs[project]['PCR_Cycles'].unique())== 1:
+                            current_row[1] = dfs[project]['PCR_Cycles'].tolist()[0]
                 if current_row[0]=='Strandness':
                     if 'Strandness' in dfs[project].columns.tolist():
                         if len(dfs[project]['Strandness'].unique())== 1:
                             current_row[1] = dfs[project]['Strandness'].tolist()[0]
+                if current_row[0]=='Paired':
+                    if 'Paired' in dfs[project].columns.tolist():
+                        if len(dfs[project]['Paired'].unique())== 1:
+                            current_row[1] = dfs[project]['Paired'].tolist()[0]
                 ## Write row to file
                 if not all(elem == '' for elem in current_row):
                     writer.writerow(current_row)
