@@ -292,9 +292,9 @@ for s in sectionDict.keys():
 #   - When writing these individual samplesheets update metadata (may have gone from 'multiple' to unique)
 #        - RunFolder
 #        - ProjectID
-#        - PoolName
-#        - Species
+#        - Species/Sample_Species
 #        - PipelineProfile
+#        - ... etc
 
 for project in all_projects:
     project_out = f'SampleSheet-ctg-rnaseq-{project}.csv'
@@ -316,20 +316,20 @@ for project in all_projects:
 
                 ## Check & replace [Header] parameters
                 ## ---------------------------
-                # e.g. params that may have been different inbetween projects, from 'multiple' to a unique shared value
-                
+                # e.g. [Data] columns that have uniqu values over all samples set to this value (may be from 'multiple' to a unique shared value)
+
                 if current_row[0]=='name_pi':
                     if 'name_pi' in dfs[project].columns.tolist():
                         if len(dfs[project]['name_pi'].unique())== 1:
                             current_row[1] = dfs[project]['name_pi'].tolist()[0]
-                if current_row[0]=='email':
-                    if 'email' in dfs[project].columns.tolist():
-                        if len(dfs[project]['email'].unique())== 1:
-                            current_row[1] = dfs[project]['email'].tolist()[0]
+                if current_row[0]=='email_customer':
+                    if 'email_customer' in dfs[project].columns.tolist():
+                        if len(dfs[project]['email_customer'].unique())== 1:
+                            current_row[1] = dfs[project]['email_customer'].tolist()[0]
                 if current_row[0]=='Species':
-                    if 'Species' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Species'].unique())== 1:
-                            current_row[1] = dfs[project]['Species'].tolist()[0]
+                    if 'Sample_Species' in dfs[project].columns.tolist():
+                        if len(dfs[project]['Sample_Species'].unique())== 1:
+                            current_row[1] = dfs[project]['Sample_Species'].tolist()[0]
                 if current_row[0]=='PipelineName':
                     if 'PipelineName' in dfs[project].columns.tolist():
                         if len(dfs[project]['PipelineName'].unique())== 1:
@@ -359,13 +359,13 @@ for project in all_projects:
                         if len(dfs[project]['pcr_cycles'].unique())== 1:
                             current_row[1] = dfs[project]['pcr_cycles'].tolist()[0]
                 if current_row[0]=='Strandness':
-                    if 'Strandness' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Strandness'].unique())== 1:
-                            current_row[1] = dfs[project]['Strandness'].tolist()[0]
+                    if 'Sample_Strandness' in dfs[project].columns.tolist():
+                        if len(dfs[project]['Sample_Strandness'].unique())== 1:
+                            current_row[1] = dfs[project]['Sample_Strandness'].tolist()[0]
                 if current_row[0]=='Paired':
-                    if 'Paired' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Paired'].unique())== 1:
-                            current_row[1] = dfs[project]['Paired'].tolist()[0]
+                    if 'Sample_Paired' in dfs[project].columns.tolist():
+                        if len(dfs[project]['Sample_Paired'].unique())== 1:
+                            current_row[1] = dfs[project]['Sample_Paired'].tolist()[0]
                 ## Write row to file
                 if not all(elem == '' for elem in current_row):
                     writer.writerow(current_row)
