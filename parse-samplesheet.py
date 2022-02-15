@@ -232,7 +232,7 @@ elif len(all_projects) >1 :
 #   - Name: samplesheet-XXX-demux.csv
 #   - XXX is the RunFolder. It i assumed the samplesheet is present within the RunFolder and that the script is initiated there (if not other runfolder name is specified in [Header] section)
 
-sheet_out = f'SampleSheet-demux-{header_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
+sheet_out = f'CTG_SampleSheet.demux.{header_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
 fh_out = open(sheet_out,'w', encoding='utf-8')
 # create the csv writer
 writer = csv.writer(fh_out, lineterminator='\n')
@@ -297,7 +297,7 @@ for s in sectionDict.keys():
 #        - ... etc
 
 for project in all_projects:
-    project_out = f'SampleSheet-ctg-rnaseq-{project}.csv'
+    project_out = f'CTG_SampleSheet.ctg-rnaseq.{project}.csv'
     print(f'... writing project specific samplesheet:  {project_out}')
     fh_out = open(project_out,'w', encoding='utf-8')
     writer = csv.writer(fh_out, lineterminator='\n')
@@ -326,6 +326,10 @@ for project in all_projects:
                     if 'email_customer' in dfs[project].columns.tolist():
                         if len(dfs[project]['email_customer'].unique())== 1:
                             current_row[1] = dfs[project]['email_customer'].tolist()[0]
+                if current_row[0]=='email_customer':
+                    if 'email-ctg' in dfs[project].columns.tolist():
+                        if len(dfs[project]['email-ctg'].unique())== 1:
+                            current_row[1] = dfs[project]['email-ctg'].tolist()[0]
                 if current_row[0]=='Species':
                     if 'Sample_Species' in dfs[project].columns.tolist():
                         if len(dfs[project]['Sample_Species'].unique())== 1:
@@ -366,6 +370,10 @@ for project in all_projects:
                     if 'Sample_Paired' in dfs[project].columns.tolist():
                         if len(dfs[project]['Sample_Paired'].unique())== 1:
                             current_row[1] = dfs[project]['Sample_Paired'].tolist()[0]
+                            ### FOR NON PAIED ADD PARAM TO BE USED FOR REMOVUNG index2 columns in [Data]
+                            pairedProjectFlag = current_row[1]
+                            #if current_row[1] in ['True','False','false']:
+
                 ## Write row to file
                 if not all(elem == '' for elem in current_row):
                     writer.writerow(current_row)
