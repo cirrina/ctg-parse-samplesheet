@@ -50,3 +50,16 @@ singularity build --fakeroot singularity-ctg-parse-samplesheet.sif singularity-p
 ```
 projects/fs1/shared/ctg-containers/ctg-parse-samplesheet/singularity-ctg-samplesheet-1.1.sif
 ```
+
+
+## Behaviours and Logics 
+Preceedenve
+* 1) All blank rows are dropped
+* 2. Drop all blank columns. This means that!! for a Header-Data pair, if the header value is specified, but data column is missing - defaults to that the column is left out.
+* A param can be set in metadata_foo to add [Data] columns that are not present but their corresponding [Header] is... 
+* for [Data] all blank columns are dropped. This means that [Header] may have a value for e.g. that apply for all assays, but then ALL must be blank. A new column will be created only if this row is not present. 
+* The script checks if [Data] column exists and then tries to generate a [Header] value.
+
+
+## DONTS
+* enter values for ALL samples or NO samnples (within a singles project). If unknown use NaN.
