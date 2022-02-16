@@ -43,6 +43,27 @@ sectionDict = {
     }
 # print(sectionDict.keys())
 
+## a dictionary is used to find the corresponding [Data] section to a [Header] param
+## the dictionary will also control how to collapse non-unique values
+## header_col = {data_col, allowMultiple}
+params_dict = {
+        'ProjectID': ['Sample_Project', False],
+        'PipelineName': ['PipelineName', False],
+        'PipelineVersion': ['PipelineVersion', False],
+        'PipelineProfile': ['PipelineProfile', False],
+        'Species': ['Sample_Species', True],
+        'email-ctg': ['email_ctg',False],
+        'name-pi': ['name_pi','use_multiple',False],
+        'email-customer': ['email_customer','use_multiple',False,],
+        'Assay': ['Assay', False],
+        'IndexAdapters': ['IndexAdapters', False],
+        'Strandness': ['Sample_Strandness', False],
+        'FragmentationTime': ['fragmentation_time', False],
+        'PCR-cycles': ['pcr_cycles', False],
+        'Paired': ['Sample_Paired', False],
+        'PoolConcNovaSeq': ['Pool_Conc_NovaSeq',False],
+        'PoolMolarityNovaSeq': ['Pool_Molarity_NovaSeq', False]
+        }
 
 ## READ THE SAMPLESHEET
 ## =====================
@@ -92,7 +113,7 @@ header_runfolder=()
 for row in sectionDict['[Header]']:
     if sectionDict['[Header]'][row][0] == 'Paired':
         header_paired = sectionDict['[Header]'][row][1]
-        if not header_paired in ['True','False','true','false']:
+        if not header_paired in ['True','False','true','false','TRUE','FALSE']:
             raise ValueError('[Header] param "Paired" incorrectly specified. Set to "true" or "false"' )
 
     # For Illumina RunFolder:
@@ -124,12 +145,16 @@ if not all(elem in df.columns.tolist() for elem in ['Sample_Name', 'Sample_ID', 
     raise ValueError('Not all columns of Sample_ID and Sample_Project are present in [Data] section of file' )
 
 
-## Curate [Data] - Lane - drop Lane Column if all are blank
-if "Lane" in df.columns:
-    if all(elem == '' for elem in df["Lane"].tolist()): # If all Lane are blank ''
-        df = df.drop(['Lane'], axis=1) # remove Lane column
-    elif not df["Lane"].tolist(): # if all Lane are blank
-        df = df.drop(['Lane'], axis=1) # remove Lane column
+## Curate [Data] - Lane -
+## drop Lane Column if all are blank
+datacols = df.keys().tolist()
+for col in datacols:
+    print(col)
+    if all(elem == '' for elem in df[col].tolist()): # If all Lane are blank ''
+        df = df.drop([col], axis=1) # remove Lane column
+    elif not df[col].tolist(): # if all Lane are blank
+         df = df.drop([col], axis=1) # remove Lane column
+
 
 
 ## Curate [Data] - Sample_ID, _Name and _Project columns accept alphanumeric characters, hyphens (-), and underscores (_)
@@ -162,7 +187,7 @@ if force_FastqBam_Names:
             fastq_2.append(f'{sample_id}_S{row_i+1}_R2{fastq_suffix}') # fastq_2.append(f'{sample_id}_S{row_i+1}_L001_R2_{fastq_suffix}')
             row_i+=1
         df["fastq_1"] = fastq_1
-        if(header_paired in ['true','True']):
+        if(header_paired in ['true','True','TRUE']):
             df["fastq_2"] = fastq_2
 
     if bam_suffix:
@@ -302,84 +327,51 @@ for s in sectionDict.keys():
 #        - PipelineProfile
 #        - ... etc
 
+def harmonize_header_params(input_row=None, data_mat=None, data_col=None, allowMultiple=None, ingoreBlanks=None):
+    ## function for harmonizing parameters that are present in [Header] and [Data] (individual samples)
+    ## [Header] and [Data] param pairs often do not have identical names
+    ## Main principle is to look at values in [Data] column and replace the [Header] with
+    ##  - unique value (if only one uniqe)
+    ##  - if >1 value collapse using comma OR 'multiple' (option)
+    return_row = input_row
+    if data_col in data_mat.columns.tolist():
+        if len(data_mat[data_col].unique())== 1:
+            return_row[1] = data_mat[data_col].tolist()[0]
+        else:
+            return_row[1] = 'multiple'
+            if allowMultiple==False:
+                raise ValueError(f'Multiple values found in [Data] column "{data_col}" when harmonizing [Header] and [Data] params. Multiple values are not allowed within one and the same project as defined by the "params_dict" object in this python script. Values found were:  {data_mat[data_col].unique()}' )
+        if not return_row[1]==input_row[1]:
+            print(f'Harmonizing values. [Header] param "{input_row[0]}" changed from "{input_row[1]}" to [Data] "{data_col}" columns value: {return_row[1]}')
+        if return_row[1]==input_row[1]:
+            print('ok')
+    return(return_row)
+
+
 for project in all_projects:
     project_out = f'CTG_SampleSheet.ctg-rnaseq.{project}.csv'
     print(f'... writing project specific samplesheet:  {project_out}')
     fh_out = open(project_out,'w', encoding='utf-8')
     writer = csv.writer(fh_out, lineterminator='\n')
+
     for s in sectionDict.keys():
+        ## [Header] - Harmonize Params
         if s == '[Header]':
             headerrow = ['']*n_columns
             headerrow[0] = '[Header]'
             writer.writerow(headerrow) # write first row of file as is - max number of comma separators needed for bcl2fastq
+
+            ## [Header] - Harmonize Params
             ## Step through all rows in the Header dict. Temp save each as current_row. Check and print to file.
             for row in sectionDict[s]:
                 current_row = ['']*n_columns
                 current_row[0] = sectionDict[s][row][0]
                 current_row[1] = sectionDict[s][row][1]
-                if current_row[0]=='ProjectID':
-                    current_row[1] = project # replace project slot with current project (e.g. from 'multiple' to this project)
 
-                ## Check & replace [Header] parameters
-                ## ---------------------------
-                # e.g. [Data] columns that have uniqu values over all samples set to this value (may be from 'multiple' to a unique shared value)
-
-                if current_row[0]=='name_pi':
-                    if 'name_pi' in dfs[project].columns.tolist():
-                        if len(dfs[project]['name_pi'].unique())== 1:
-                            current_row[1] = dfs[project]['name_pi'].tolist()[0]
-                if current_row[0]=='email_customer':
-                    if 'email_customer' in dfs[project].columns.tolist():
-                        if len(dfs[project]['email_customer'].unique())== 1:
-                            current_row[1] = dfs[project]['email_customer'].tolist()[0]
-                if current_row[0]=='email_customer':
-                    if 'email-ctg' in dfs[project].columns.tolist():
-                        if len(dfs[project]['email-ctg'].unique())== 1:
-                            current_row[1] = dfs[project]['email-ctg'].tolist()[0]
-                if current_row[0]=='Species':
-                    if 'Sample_Species' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Sample_Species'].unique())== 1:
-                            current_row[1] = dfs[project]['Sample_Species'].tolist()[0]
-                if current_row[0]=='PipelineName':
-                    if 'PipelineName' in dfs[project].columns.tolist():
-                        if len(dfs[project]['PipelineName'].unique())== 1:
-                            current_row[1] = dfs[project]['PipelineName'].tolist()[0]
-                if current_row[0]=='PipelineVersion':
-                    if 'PipelineVersion' in dfs[project].columns.tolist():
-                        if len(dfs[project]['PipelineVersion'].unique())== 1:
-                            current_row[1] = dfs[project]['PipelineVersion'].tolist()[0]
-                if current_row[0]=='PipelineProfile':
-                    if 'PipelineProfile' in dfs[project].columns.tolist():
-                        if len(dfs[project]['PipelineProfile'].unique())== 1:
-                            current_row[1] = dfs[project]['PipelineProfile'].tolist()[0]
-                if current_row[0]=='PoolName':
-                    if 'Sample_Pool' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Sample_Pool'].unique())== 1:
-                            current_row[1] = dfs[project]['Sample_Pool'].tolist()[0]
-                if current_row[0]=='Assay':
-                    if 'Assay' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Assay'].unique())== 1:
-                            current_row[1] = dfs[project]['Assay'].tolist()[0]
-                if current_row[0]=='fragmentation_time':
-                    if 'fragmentation_time' in dfs[project].columns.tolist():
-                        if len(dfs[project]['fragmentation_time'].unique())== 1:
-                            current_row[1] = dfs[project]['fragmentation_time'].tolist()[0]
-                if current_row[0]=='pcr_cycles':
-                    if 'pcr_cycles' in dfs[project].columns.tolist():
-                        if len(dfs[project]['pcr_cycles'].unique())== 1:
-                            current_row[1] = dfs[project]['pcr_cycles'].tolist()[0]
-                if current_row[0]=='Strandness':
-                    if 'Sample_Strandness' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Sample_Strandness'].unique())== 1:
-                            current_row[1] = dfs[project]['Sample_Strandness'].tolist()[0]
-                if current_row[0]=='Paired':
-                    if 'Sample_Paired' in dfs[project].columns.tolist():
-                        if len(dfs[project]['Sample_Paired'].unique())== 1:
-                            current_row[1] = dfs[project]['Sample_Paired'].tolist()[0]
-                            ### FOR NON PAIED ADD PARAM TO BE USED FOR REMOVUNG index2 columns in [Data]
-                            pairedProjectFlag = current_row[1]
-                            #if current_row[1] in ['True','False','false']:
-
+                ## harmonize_header_params function
+                # If param found in params_dict use harmonize_header_params function to replace [Header] value (if needed). Note that all blank columns have allready been removed
+                if current_row[0] in params_dict.keys():
+                    current_row = harmonize_header_params(input_row=current_row, data_mat=dfs[project], data_col=params_dict[current_row[0]][0], allowMultiple=params_dict[current_row[0]][1])
                 ## Write row to file
                 if not all(elem == '' for elem in current_row):
                     writer.writerow(current_row)
