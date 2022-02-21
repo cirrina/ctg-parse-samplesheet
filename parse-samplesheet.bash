@@ -1,18 +1,21 @@
 #!/bin/bash
 
+echo " ... "
 echo " ----------------------- "
 echo " ctg SampleSheet Parser  "
 echo " ----------------------- "
-echo " ... "
 echo " check & parse samplesheet into demux-ready sheet - to use with ctg-demux script"
 echo " ... "
 echo " ... checking input args ..."
+echo " ... "
 
 singularity_contatiner="/projects/fs1/shared/ctg-containers/ctg-parse-samplesheet/singularity-ctg-samplesheet-1.x.sif"
+execdir=$(pwd)
+# echo " ... ${execdir}"
 
 ## Uncomment two lines below to run python shell script on local machine macOS
-#source ~/miniconda3/etc/profile.d/conda.sh ## Needed to run at local
-#conda activate ctg-parse-samplesheet
+## source ~/miniconda3/etc/profile.d/conda.sh ## Needed to run at local
+## conda activate ctg-parse-samplesheet
 
 
 forcesamplename="True"
@@ -22,12 +25,13 @@ forcefastqnames="False"
 forcebamnames="False"
 allowdupsoverlanes="True"
 collapselanes="True"
+samplesheet=""
 
 # usage message
 usage() {
     echo ""
     echo " usage : "
-    echo " parse-samplesheet [ -s samplesheet ] .... "  1>&2
+    echo " parse-samplesheet [ -s samplesheet ] .... + optional arguments ... "  1>&2
     echo ""
     echo " arguments : "
     echo " samplesheet         -s : IEM style laboratory SampleSheet. Project and pipeline specific parameters must be added. "
@@ -47,7 +51,7 @@ exit_abnormal() {
 }
 
 # Read and control input arguments
-while getopts ":sxfbgcde" opt; do
+while getopts :s:xfbgcdeh opt; do
     case $opt in
       s) samplesheet=$OPTARG
           ;;
@@ -78,12 +82,13 @@ done
 shift "$(( OPTIND -1 ))"
 
 ## Check Sample Sheet. if file is present in work directory.
-if [ -z $samplesheet ]; then
+if [[ -z ${samplesheet} ]]; then
   echo ""; echo "";
+  echo "${samplesheet}"
   echo " Error: You must specify samplesheet: '-s' flag. "; echo ""
   exit 1
 fi
-if [ ! -f $samplesheet ]; then
+if [ ! -f ${samplesheet} ]; then
   echo ""; echo "";
   echo " Eroor: SampleSheet does not exist"
   #echo "- Please specify correct samplesheet, or create a CTG_SampleSheet.csv in current runfolder"
@@ -93,20 +98,20 @@ fi
 ### Exec python script
 scriptdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # python --version
+echo " ... ... samplesheet is: ${samplesheet}"
 echo " ... running python script: parse-sampelsheet.py"
 echo " ... check python script logfile: parse-samplesheet.log"
-# python ${scriptdir}/parse-samplesheet.py ${samplesheet} ## to run local
-singularity exec --bind \
-    /projects/fs1/ ${singularity_contatiner} \
-    python ${scriptdir}/parse-samplesheet.py \
-      --samplesheet ${samplesheet} \
-      --forcesamplename ${forcesamplename} \
-      --fastqsuffix ${fastqsuffix} \
-      --bamsuffix ${bamsuffix} \
-      --forcefastqnames ${forcefastqnames}\
-      --forcebamnames ${forcebamnames}\
-      --allowdupsoverlanes ${allowdupsoverlanes}\
-      --collapselanes ${collapselanes}  > parse-samplesheet.log &
+#python ${scriptdir}/parse-samplesheet.py --samplesheet ${samplesheet} \ ## set if run local
+singularity exec --bind /projects/fs1/ ${singularity_contatiner} python ${scriptdir}/parse-samplesheet.py --samplesheet ${samplesheet} \
+  --forcesamplename ${forcesamplename} \
+  --fastqsuffix ${fastqsuffix} \
+  --bamsuffix ${bamsuffix} \
+  --forcefastqnames ${forcefastqnames} \
+  --forcebamnames ${forcebamnames} \
+  --allowdupsoverlanes ${allowdupsoverlanes} \
+  --collapselanes ${collapselanes} > parse-samplesheet.log
 
-print(' ... ------------------------------------- ')
-print('  === OK ===')
+
+cat ./parse-samplesheet.log
+echo ' ... ------------------------------------- '
+echo '  === OK ==='

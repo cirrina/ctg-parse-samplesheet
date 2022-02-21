@@ -120,12 +120,16 @@ with open(sheet_name, 'r', encoding='utf-8-sig') as csvfile:
             continue
         else:
             ## read each row and save in section-specific dictionary.
-            ## replace very illegal characters
+            ## replace very illegal characters wtih blanks ("")
             p = re.compile(r'[ÅåÄäÖö\+]')
             i = 0
             for row_i in row:
                 row[i] = p.sub('', row_i)
+                ## replace TRUE/FALSE (excel style) with True/Fals
+                row[i] = row[i].replace("FALSE", "False")
+                row[i] = row[i].replace("TRUE", "True")
                 i+=1
+
             ## save lines in sectionDict
             ## for non [Header] section, do not name
             if not current_s in ['[Header]','[Settings]']:
@@ -204,7 +208,7 @@ print(f' ... ... ... ok')
 
 ## Curate [Data] - Sample_ID, _Name and _Project columns accept alphanumeric characters, hyphens (-), and underscores (_)
 ## replace illegal characters with underscore
-check_cols = ['Sample_Name', 'Sample_ID', 'Sample_Project']
+check_cols = ['Sample_ID', 'Sample_Name', 'Sample_Project']
 print(f' ... ... Checking for illegal characters in columns: "{check_cols}" ')
 for col in check_cols:
     regular_expression = '[^a-zA-Z0-9\-\_]'
@@ -296,8 +300,9 @@ all_projects = set(dfs.keys()) # set all_projects list with all project names
 # Duplicate samples IDs are accepted if same project but only if a project is on different Lanes (This is Rare)
 # Also, option allow_dups_over_lanes, if false, then follow strict rule of no duplicates, regardless if different Lane or not
 #if "Lane" in df.columns:
-print(f' ... ... Checking for duplicate Sample IDs' )
+print(f' ... ... Double-check that no duplicate Sample IDs exist' )
 if not allow_dups_over_lanes:
+    print(f' ... ... ... "allow_dups_over_lanes" set to {allow_dups_over_lanes}. Duplicate Sample_IDs are strictly forbidden.')
     sid = df['Sample_ID'].map(str)
     seen = set()
     dupes = [x for x in sid if x in seen or seen.add(x)]
@@ -305,29 +310,34 @@ if not allow_dups_over_lanes:
         print(f' ... ... ... Warning: Duplicate(s) detected: {dupes}')
         raise ValueError('Error: Duplicate sample names detected - not allowed when allow_dups_over_lanes is set to False' )
 elif "Lane" not in df.columns:
-    print(f' ... ... ... Lane not specified - no LaneDivider')
+    print(f' ... ... ... [Data] "Lane" column not specified - Duplicate Sample_IDs are strictly forbidden.')
     sid = df['Sample_ID'].map(str) + '  ' + df['Sample_Project'].map(str)
     seen = set()
     dupes = [x for x in sid if x in seen or seen.add(x)]
     if dupes:
         print(f' ... ... ... Warning: Duplicate(s) detected: {dupes}')
         raise ValueError('Error: Duplicate sample names detected - not allowed' )
-elif len(all_projects)==1:
-    print(f' ... ... ... One unique project - "Lane" is specified')
+# elif len(all_projects)==1:
+else:
+    print(f' ... ... ... [Data] "Lane" column is specified')
+    print(f' ... ... ... "allow_dups_over_lanes" set to True. Duplicate Sample_IDs are allowed but only if in different lanes.')
     sid = df['Lane'].map(str) + '  ' + df['Sample_ID'].map(str)
     seen = set()
     dupes = [x for x in sid if x in seen or seen.add(x)]
     if dupes:
         print(f' ... ... ... Warning: Duplicate(s) detected: {dupes}')
         raise ValueError('Error: Duplicate sample names detected wihtin a lane - not allowed !!' )
-elif len(all_projects) >1 :
-    print(f' ... ... ... Multiple unique projects - "Lane" is specified. "allow_dups_over_lanes" is "true"')
-    sid = df['Sample_ID'].map(str)
-    seen = set()
-    dupes = [x for x in sid if x in seen or seen.add(x)]
-    if dupes:
-        print(f' ... ... ... Warning: Duplicate(s) detected: {dupes}')
-        raise ValueError('Error: Duplicate sample names detected - refrain from using same Sample IDs between projects within one flowcell' )
+# not sure if need to include beliw ...
+# elif len(all_projects) >1 :
+#     print(f' ... ... ... [Data] "Lane" column is specified & samples are from different "Sample_Project"')
+#     print(f' ... ... ... "allow_dups_over_lanes" set to {allow_dups_over_lanes}. Duplicate Sample_IDs are allowed but only between lanes.')
+#     sid = df['Sample_ID'].map(str)
+#     seen = set()
+#     dupes = [x for x in sid if x in seen or seen.add(x)]
+#     if dupes:
+#         print(f' ... ... ... Warning: Duplicate(s) detected: {dupes}')
+#         raise ValueError('Error: Duplicate sample names detected - refrain from using same Sample IDs between projects within one flowcell' )
+print(f' ... ... ... ok' )
 
 
 # [Data] section
@@ -360,17 +370,18 @@ for s in sectionDict.keys():
 
             if row == 'SharedFlowCell':
                 if len(all_projects) > 1:
-                    print(f' ... ... mutiple projects in "Sample_Project" setting "SharedFlowCell" to "true" ')
-                    sectionDict[s][row][1] = 'true'
+                    print(f' ... ... mutiple projects in "Sample_Project" - setting "SharedFlowCell" to "true" ')
+                    sectionDict[s][row][1] = 'True'
                 else:
-                    sectionDict[s][row][1] = 'false'
-                    print(f' ... ... setting "SharedFlowCell" to "true" ')
+                    sectionDict[s][row][1] = 'False'
+                    print(f' ... ... only one project in "Sample_Project" - setting "SharedFlowCell" to "false" ')
+                    sectionDict[s][row][1] = 'False'
             if row == 'NumberSamples':
                 mykeys=sectionDict['[Header]'].keys()
                 n_samples = df.shape[0]
                 s_samples = sectionDict[s][row][1]
                 if not n_samples == sectionDict[s][row][1]:
-                    print(f' ... ... Warning number of Sample_IDs ({n_samples}) do not match supplied "NumberSamples" ({s_samples})')
+                    print(f' ... ... Warning: Number of Sample_IDs ({n_samples}) do not match supplied "NumberSamples" ({s_samples})')
                 sectionDict[s][row][1] = n_samples
                 print(f' ... ... setting "NumberSamples" to: {n_samples}')
 
