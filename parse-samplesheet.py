@@ -125,9 +125,11 @@ with open(sheet_name, 'r', encoding='utf-8-sig') as csvfile:
             i = 0
             for row_i in row:
                 row[i] = p.sub('', row_i)
-                ## replace TRUE/FALSE (excel style) with True/Fals
-                row[i] = row[i].replace("FALSE", "False")
-                row[i] = row[i].replace("TRUE", "True")
+                ## replace TRUE/FALSE (excel style) with True/Fals .
+                row[i] = row[i].replace("FALSE", "false")
+                row[i] = row[i].replace("False", "false")
+                row[i] = row[i].replace("TRUE", "true")
+                row[i] = row[i].replace("True", "true")
                 i+=1
 
             ## save lines in sectionDict
@@ -151,9 +153,9 @@ header_runfolder=()
 for row in sectionDict['[Header]']:
     # print(row)
     if row == 'Paired':
-        print(f' ... ... found[Header] param "Paired": checking ...')
+        print(f' ... ... found [Header] param "Paired": checking ...')
         header_paired = sectionDict['[Header]'][row][1]
-        if not header_paired in ['True','False','true','false','TRUE','FALSE']:
+        if not header_paired in ['true','false']:
             raise ValueError('[Header] param "Paired" incorrectly specified. Set to "true" or "false"' )
         print(f' ... ... ... ok')
     # For Illumina RunFolder:
@@ -162,9 +164,13 @@ for row in sectionDict['[Header]']:
         # print(f' ... ... found[Header] param "RunFolder"')
         header_runfolder = sectionDict['[Header]'][row][1]
         if not header_runfolder:
-            print(f' ... ... RunFolder not specified - setting to current dir: "{cwd}"')
-            sectionDict['[Header]'][row][1] = cwd
-            header_runfolder = cwd
+            print(f' ... ... RunFolder not specified ...')
+            if os.path.isfile('./RTAComplete.txt'):
+                sectionDict['[Header]'][row][1] = cwd
+                header_runfolder = cwd
+                print(f' ... ... ... Found "RTAComplete.txt" - Currect dir is a RunFolder. Setting "RunFolder" to current dir: "{cwd}"')
+            else:
+                print(f' ... ... ... "RTAComplete.txt" not in current dir. Leave RunFolder unspecified.')
 print(f' ... ok')
 
 ## Add NumberSamples param if not present
@@ -259,7 +265,7 @@ if fastq_suffix: # First check if fastq suffix is provided
             row_i+=1
         df["fastq_1"] = fastq_1
         print(f' ... ... ... added fastq_1 file names using "{fastq_suffix}"suffix' )
-        if(header_paired in ['true','True','TRUE']):
+        if(header_paired in ['true']):
             df["fastq_2"] = fastq_2
             print(f' ... ... ... added fastq_2 file names using "{fastq_suffix}" suffix' )
 else:
@@ -308,7 +314,7 @@ if not allow_dups_over_lanes:
     dupes = [x for x in sid if x in seen or seen.add(x)]
     if dupes:
         print(f' ... ... ... Warning: Duplicate(s) detected: {dupes}')
-        raise ValueError('Error: Duplicate sample names detected - not allowed when allow_dups_over_lanes is set to False' )
+        raise ValueError('Error: Duplicate sample names detected - not allowed when allow_dups_over_lanes argument is set to False' )
 elif "Lane" not in df.columns:
     print(f' ... ... ... [Data] "Lane" column not specified - Duplicate Sample_IDs are strictly forbidden.')
     sid = df['Sample_ID'].map(str) + '  ' + df['Sample_Project'].map(str)
@@ -320,7 +326,7 @@ elif "Lane" not in df.columns:
 # elif len(all_projects)==1:
 else:
     print(f' ... ... ... [Data] "Lane" column is specified')
-    print(f' ... ... ... "allow_dups_over_lanes" set to True. Duplicate Sample_IDs are allowed but only if in different lanes.')
+    print(f' ... ... ... "allow_dups_over_lanes" argument set to True. Duplicate Sample_IDs are allowed but only if in different lanes.')
     sid = df['Lane'].map(str) + '  ' + df['Sample_ID'].map(str)
     seen = set()
     dupes = [x for x in sid if x in seen or seen.add(x)]
@@ -371,11 +377,11 @@ for s in sectionDict.keys():
             if row == 'SharedFlowCell':
                 if len(all_projects) > 1:
                     print(f' ... ... mutiple projects in "Sample_Project" - setting "SharedFlowCell" to "true" ')
-                    sectionDict[s][row][1] = 'True'
+                    sectionDict[s][row][1] = 'true'
                 else:
-                    sectionDict[s][row][1] = 'False'
+                    sectionDict[s][row][1] = 'false'
                     print(f' ... ... only one project in "Sample_Project" - setting "SharedFlowCell" to "false" ')
-                    sectionDict[s][row][1] = 'False'
+                    sectionDict[s][row][1] = 'false'
             if row == 'NumberSamples':
                 mykeys=sectionDict['[Header]'].keys()
                 n_samples = df.shape[0]
@@ -383,7 +389,7 @@ for s in sectionDict.keys():
                 if not n_samples == sectionDict[s][row][1]:
                     print(f' ... ... Warning: Number of Sample_IDs ({n_samples}) do not match supplied "NumberSamples" ({s_samples})')
                 sectionDict[s][row][1] = n_samples
-                print(f' ... ... setting "NumberSamples" to: {n_samples}')
+                print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
 
             if not all(elem == '' for elem in sectionDict[s][row]):
                 current_row = ['']*n_columns
@@ -529,7 +535,7 @@ for project in all_projects:
                     dfs_write.drop_duplicates(subset=['Sample_ID'], inplace=True) ## collapse - drop rows with duplicated fastq files
                 dfs[project].to_csv(f, header=True, index=False)
     print(f' ... ------------------------------------- ')
-print('  === OK ===')
+print(' ... ok ... ')
 # close files
 f.close()
 csvfile.close()
