@@ -174,7 +174,7 @@ for row in sectionDict['[Header]']:
             if os.path.isfile('./RTAComplete.txt'):
                 sectionDict['[Header]'][row][1] = cwd
                 header_runfolder = cwd
-                print(f' ... ... ... Found "RTAComplete.txt" - Currect dir is a RunFolder. Setting "RunFolder" to current dir: "{cwd}"')
+                print(f' ... ... ... Found "RTAComplete.txt" - Current dir is a RunFolder. Setting "RunFolder" to current dir: "{cwd}"')
             else:
                 print(f' ... ... ... "RTAComplete.txt" not in current dir. Leave RunFolder unspecified.')
 print(f' ... ok')
@@ -445,7 +445,7 @@ for s in sectionDict.keys():
 demux_patterns=['Lane','Sample_ID','Sample_Name','Sample_Project',"index","Index"]
 demux_cols=[]
 for cp in demux_patterns:
-    cpi = [col for col in mycols if cp in col]
+    cpi = [col for col in df.columns if cp in col]
     if cpi:
         demux_cols = demux_cols+cpi
 
