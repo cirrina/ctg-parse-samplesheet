@@ -297,14 +297,6 @@ else:
 print(f' ... ... ... ok' )
 
 
-# [Data] section
-## Split df into multiple data frames based on Project ID (one df per project)
-## This to save project-specific/uniqe sample sheets & initiate project specific nextflow pipelines
-# # ==========================================
-dfs = dict(tuple(df.groupby('Sample_Project')))
-all_projects = set(dfs.keys()) # set all_projects list with all project names
-
-
 
 # [Data] section
 ## Check if any duplicated sample_ids exits.
@@ -353,20 +345,31 @@ print(f' ... ... ... ok' )
 
 
 # [Data] section
+## Split df into multiple data frames based on Project ID (one df per project)
+## This to save project-specific/uniqe sample sheets & initiate project specific nextflow pipelines
+# # ==========================================
+dfs = dict(tuple(df.groupby('Sample_Project')))
+all_projects = set(dfs.keys()) # set all_projects list with all project names
+
+
+
+
+# [Data] section
 ## Define the (max) number of columns of sheet to write. May have changed from import
 # The first row must have columns (commas) mathcing the [Data] section
 n_columns = df.shape[1]
 
 
 
-
 #  Write Sample Sheets
 # =====================================================
-# 1. One samplesheet used for Demux with bcl2fastq.
-#   - Name: samplesheet-XXX-demux.csv
-#   - XXX is the RunFolder. It i assumed the samplesheet is present within the RunFolder and that the script is initiated there (if not other runfolder name is specified in [Header] section)
+
+
+# 1. One samplesheet with full parsed output
+#   - Name: CTG_SampleSheet.parsed.csv
 print(f' ... ------------------------------------- ')
-sheet_out = f'CTG_SampleSheet.demux.{header_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
+sheet_out = f'{sheet_name.replace(".csv","")}.parsed.csv'
+#sheet_out = f'CTG_SampleSheet.parsed.csv' # the runfolder is added to samplesheet name. defaults to current dir.
 fh_out = open(sheet_out,'w', encoding='utf-8')
 # create the csv writer
 writer = csv.writer(fh_out, lineterminator='\n')
@@ -434,7 +437,93 @@ for s in sectionDict.keys():
              df.to_csv(f, header=True, index=False)
 
 
-#  2. One samplesheet per unique project.
+
+# 2. One slimmed samplesheet used for demux with bcl2fastq.
+#   - Name: CTG_SampleSHeet-demux.csv
+
+## Genreate stripped [data] section for demux. Keep ony columns needed for demux (['Lane','Sample_ID','Sample_Name','Sample_Project',"index..."])
+demux_cols = [].append.[col for col in df.columns if 'index' in col]
+ddemux_patterns=['Lane','Sample_ID','Sample_Name','Sample_Project',"index","Index"]
+demux_cols=[]
+for cp in demux_patterns:
+    cpi = [col for col in mycols if cp in col]
+    if cpi:
+        demux_cols = demux_cols+cpi
+
+## bcl2fastq does not allow commas in [Data]. Create a cppy of the [data] df and replave all illegal characters
+df_demux = df.replace('\"','', regex=True) # replace all double quotes with blanks
+df_demux = df_demux.replace('\,',' ', regex=True) # replace all commas woth space
+
+print(f' ... ------------------------------------- ')
+sheet_out = f'CTG_SampleSheet.demux.{header_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
+fh_out = open(sheet_out,'w', encoding='utf-8')
+# create the csv writer
+writer = csv.writer(fh_out, lineterminator='\n')
+print(f' ... writing demux specific samplesheet:  {sheet_out}')
+
+for s in sectionDict.keys():
+    if s == '[Header]':
+        # set NumberSamples param in [Header] (and warn if different from what is supplied)
+        headerrow = ['']*n_columns #
+        headerrow[0] = '[Header]'
+        writer.writerow(headerrow) # write first row of file as is - max number of comma separators needed for bcl2fastq
+        for row in sectionDict[s]: # step through all rows of the [Header] dict list
+
+            if row == 'SharedFlowCell':
+                if len(all_projects) > 1:
+                    print(f' ... ... mutiple projects in "Sample_Project" - setting "SharedFlowCell" to "true" ')
+                    sectionDict[s][row][1] = 'true'
+                else:
+                    sectionDict[s][row][1] = 'false'
+                    print(f' ... ... only one project in "Sample_Project" - setting "SharedFlowCell" to "false" ')
+                    sectionDict[s][row][1] = 'false'
+            if row == 'NumberSamples':
+                mykeys=sectionDict['[Header]'].keys()
+                n_samples = df.shape[0]
+                s_samples = sectionDict[s][row][1]
+                if not n_samples == sectionDict[s][row][1]:
+                    print(f' ... ... Warning: Number of Sample_IDs ({n_samples}) do not match supplied "NumberSamples" ({s_samples})')
+                sectionDict[s][row][1] = n_samples
+                print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
+
+            if not all(elem == '' for elem in sectionDict[s][row]):
+                current_row = ['']*n_columns
+                current_row[0] = sectionDict[s][row][0]
+                current_row[1] = sectionDict[s][row][1]
+                writer.writerow(current_row)
+    if s == '[Reads]':
+        writer.writerow(['']*n_columns)
+        readsrow = ['']*n_columns
+        readsrow[0] = '[Reads]'
+        writer.writerow(readsrow)
+        for row in sectionDict[s]:
+            if not all(elem == '' for elem in sectionDict[s][row]):
+                current_row = ['']*n_columns
+                current_row[0] = sectionDict[s][row][0]
+                current_row[1] = sectionDict[s][row][1]
+                writer.writerow(current_row)
+    if s == '[Settings]':
+        writer.writerow(['']*n_columns)
+        settingsrow = ['']*n_columns
+        settingsrow[0] = '[Settings]'
+        writer.writerow(settingsrow)
+        for row in sectionDict[s]:
+            if not all(elem == '' for elem in sectionDict[s][row]):
+                current_row = ['']*n_columns
+                current_row[0] = sectionDict[s][row][0]
+                current_row[1] = sectionDict[s][row][1]
+                writer.writerow(current_row)
+    if s == '[Data]':
+        writer.writerow(['']*n_columns)
+        datarow = ['']*n_columns
+        datarow[0] = '[Data]'
+        writer.writerow(datarow)
+        fh_out.close()
+        with open(sheet_out, 'a') as f:
+             df_demux.to_csv(f, header=True, index=False)
+
+
+#  3. One samplesheet per unique project (rnaseq pipeline).
 #   NOT for demux - used for Nextflow - if multiple Lanes (and --noLaneSplitting) Needs one row per Sample fastq
 #   - Name: samplesheet-ctg-YYYY.csv
 #   - When writing these individual samplesheets update metadata (may have gone from 'multiple' to unique)
@@ -467,7 +556,7 @@ def harmonize_header_params(input_row=None, data_mat=None, data_col=None, allowM
 
 
 for project in all_projects:
-    project_out = f'CTG_SampleSheet.rnaseq.{project}.csv'
+    project_out = f'CTG_SampleSheet.project.{project}.csv'
     print(f' ... ------------------------------------- ')
     print(f' ... writing Project specific samplesheet:  {project_out}')
     fh_out = open(project_out,'w', encoding='utf-8')
