@@ -344,6 +344,7 @@ else:
 print(f' ... ... ... ok' )
 
 
+
 # [Data] section
 ## Split df into multiple data frames based on Project ID (one df per project)
 ## This to save project-specific/uniqe sample sheets & initiate project specific nextflow pipelines
@@ -351,13 +352,24 @@ print(f' ... ... ... ok' )
 dfs = dict(tuple(df.groupby('Sample_Project')))
 all_projects = set(dfs.keys()) # set all_projects list with all project names
 
-
+## Curate [Data] all Columns that contain only blank values
+print(f'... ... looping all project-specific [Data] sections. dropping columns with only blank values')
+for project in all_projects:
+    datacols = dfs[project].keys().tolist()
+    for col in datacols:
+        if all(elem == '' for elem in dfs[project][col].tolist()): # If all Lane are blank ''
+            print(f' ... ... ... dropping "{col}"')
+            dfs[project] = dfs[project].drop([col], axis=1) # remove column
+        elif not dfs[project][col].tolist(): # if all values blank
+            print(f' ... ... ... dropping "{col}"')
+            dfs[project] = dfs[project].drop([col], axis=1) # remove column
+    print(f' ... ... ... ok')
 
 
 # [Data] section
 ## Define the (max) number of columns of sheet to write. May have changed from import
 # The first row must have columns (commas) mathcing the [Data] section
-n_columns = df.shape[1]
+
 
 
 
@@ -374,7 +386,7 @@ fh_out = open(sheet_out,'w', encoding='utf-8')
 # create the csv writer
 writer = csv.writer(fh_out, lineterminator='\n')
 print(f' ... writing demux specific samplesheet:  {sheet_out}')
-
+n_columns = df.shape[1]
 for s in sectionDict.keys():
     if s == '[Header]':
         # set NumberSamples param in [Header] (and warn if different from what is supplied)
@@ -448,10 +460,11 @@ for cp in demux_patterns:
     cpi = [col for col in df.columns if cp in col]
     if cpi:
         demux_cols = demux_cols+cpi
-
+df_demux = df[['A', 'C', 'D']].copy()
 ## bcl2fastq does not allow commas in [Data]. Create a cppy of the [data] df and replave all illegal characters
-df_demux = df.replace('\"','', regex=True) # replace all double quotes with blanks
+df_demux = df_demux.replace('\"','', regex=True) # replace all double quotes with blanks
 df_demux = df_demux.replace('\,',' ', regex=True) # replace all commas woth space
+n_columns = df_demux.shape[1]
 
 print(f' ... ------------------------------------- ')
 sheet_out = f'CTG_SampleSheet.demux.{header_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
@@ -560,6 +573,7 @@ for project in all_projects:
     print(f' ... writing Project specific samplesheet:  {project_out}')
     fh_out = open(project_out,'w', encoding='utf-8')
     writer = csv.writer(fh_out, lineterminator='\n')
+    n_columns = dfs[project].shape[1]
 
     for s in sectionDict.keys():
 
