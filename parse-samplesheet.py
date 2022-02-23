@@ -68,6 +68,11 @@ sectionDict = {
     '[Data]': {}
     }
 # print(sectionDict.keys())
+## Pipeline dict. Used to check allowed Pipeline & pipeline profiles
+pipelineDict = {
+    'seqonly': ['demux','rawdata'],
+    'ctg-rnasesq': ['rnaseq_mrna','rnaseq_total','uroscan']
+    }
 
 ## a dictionary is used to find the corresponding [Data] section to a [Header] param
 ## the dictionary will also control how to collapse non-unique values
@@ -144,6 +149,32 @@ with open(sheet_name, 'r', encoding='utf-8-sig') as csvfile:
                     header_rows.append(row[0])
                 sectionDict[current_s][row[0]] = row
             s_index += 1
+print(f' ... ok')
+
+# Read & check Pipeline & Profile.
+# =========================================================================
+print(f' ... Checking Pipeline & Profile in [Header]')
+name_found=False  ## PipelineName is required
+profile_found=False ## PipelineProfile is required
+for row in sectionDict['[Header]']:
+    if row == 'PipelineName':
+        header_pipelinename = sectionDict['[Header]'][row][1]
+        print(f' ... ... PipelineName: {header_pipelinename}')
+        name_found=True
+        if not header_pipelinename in pipelineDict.keys():
+            raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
+    if row == 'PipelineProfile':
+        header_pipelineprofile = sectionDict['[Header]'][row][1]
+        print(f' ... ... PipelineProfile: {header_pipelineprofile}')
+        profile_found=True
+        if not header_pipelineprofile in pipelineDict[header_pipelinename]:
+            raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
+
+
+if not name_found: raise ValueError('[Header] param "PipelineName" must be specified' )
+if not profile_found: raise ValueError('[Header] param "PipelineProfile" must be specified' )
+print(f' ... ... ok')
+
 
 # Read & check some parameters defined in [Header]. Save some params for later use
 # =========================================================================
@@ -177,6 +208,7 @@ for row in sectionDict['[Header]']:
                 print(f' ... ... ... Found "RTAComplete.txt" - Current dir is a RunFolder. Setting "RunFolder" to current dir: "{cwd}"')
             else:
                 print(f' ... ... ... "RTAComplete.txt" not in current dir. Leave RunFolder unspecified.')
+
 print(f' ... ok')
 
 ## Add NumberSamples param if not present
@@ -460,10 +492,12 @@ for cp in demux_patterns:
     cpi = [col for col in df.columns if cp in col]
     if cpi:
         demux_cols = demux_cols+cpi
-df_demux = df[['A', 'C', 'D']].copy()
+df_demux = df[df.columns[df.columns.isin(demux_cols)]]
+
 ## bcl2fastq does not allow commas in [Data]. Create a cppy of the [data] df and replave all illegal characters
 df_demux = df_demux.replace('\"','', regex=True) # replace all double quotes with blanks
 df_demux = df_demux.replace('\,',' ', regex=True) # replace all commas woth space
+
 n_columns = df_demux.shape[1]
 
 print(f' ... ------------------------------------- ')
