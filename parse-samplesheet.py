@@ -442,8 +442,7 @@ for s in sectionDict.keys():
 #   - Name: CTG_SampleSHeet-demux.csv
 
 ## Genreate stripped [data] section for demux. Keep ony columns needed for demux (['Lane','Sample_ID','Sample_Name','Sample_Project',"index..."])
-demux_cols = [].append.[col for col in df.columns if 'index' in col]
-ddemux_patterns=['Lane','Sample_ID','Sample_Name','Sample_Project',"index","Index"]
+demux_patterns=['Lane','Sample_ID','Sample_Name','Sample_Project',"index","Index"]
 demux_cols=[]
 for cp in demux_patterns:
     cpi = [col for col in mycols if cp in col]
