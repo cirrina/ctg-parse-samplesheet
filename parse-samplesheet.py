@@ -793,7 +793,7 @@ else:
                         print(f' ... ... ... PipelineName: {header_pipelinename}')
                         if not header_pipelinename in pipelineDict.keys():
                             raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
-                    if current_row[0] 'PipelineProfile':
+                    if current_row[0] == 'PipelineProfile':
                         header_pipelineprofile = current_row[1]
                         print(f' ... ... ... PipelineProfile: {header_pipelineprofile}')
                         if not header_pipelineprofile in pipelineDict[header_pipelinename]:
