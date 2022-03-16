@@ -83,7 +83,10 @@ sectionDict = {
 ## Pipeline dict. Used to check allowed Pipeline & pipeline profiles
 pipelineDict = {
     'seqonly': ['demux','rawdata'],
-    'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan']
+    'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','demux','rawdata'],
+    'dna-panel': ['gmck','gms','demux','rawdata'],
+    'dna-wes': ['demux','rawdata'],
+    'dna-wgs': ['demux','rawdata']
     }
 
 
@@ -101,8 +104,11 @@ params_dict = {
     'PipelineName': {'DataCol': 'PipelineName','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineVersion': {'DataCol': 'PipelineVersion','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineProfile': {'DataCol': 'PipelineProfile','Catenate': False,'RegExp': '','Controlled': True},
+    'Species': {'DataCol': 'Sample_Species','Catenate': False,'RegExp': '','Controlled':False},
     'ReferenceGenome': {'DataCol': 'Sample_ReferenceGenome','Catenate': False,'RegExp': '','Controlled':False},
-    'email-ctg': {'DataCol': 'email_ctg','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
+    'email-ctg-lab': {'DataCol': 'email_ctg_lab','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
+    'email-ctg-bnf': {'DataCol': 'email_ctg_bnf','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
+    'email-ctg-all': {'DataCol': 'email_ctg_all','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
     'name-pi': {'DataCol': 'name_pi','Catenate': False,'RegExp': '','Controlled':False},
     'email-customer': {'DataCol': 'email_customer','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
     'Assay': {'DataCol': 'Assay','Catenate': False,'RegExp': '','Controlled': True},
