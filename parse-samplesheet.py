@@ -42,7 +42,7 @@ collapse_lanes = args.collapselanes ## Like allow_dups_over_lanes, affects proje
 ##  Functions
 ## -------------------------------
 ## extract param function. Return value from second instance if found. else return blank
-def get_param(param_name=None, myDict=sectionDict['[Header]']):
+def get_param(param_name=None, myDict=None]):
     if param_name in myDict.keys(): return(myDict[param_name][1])
     else: return('')
 ## end function
@@ -259,10 +259,8 @@ with open(sheet_name, 'r', encoding='utf-8-sig') as csvfile:
 print(f' ... ... ok')
 
 
-
-
-# Read & check Pipeline & Profile.
-# =========================================================================
+# # Read & check Pipeline & Profile. (check allowed values when writing project specific sheet)
+# # =========================================================================
 print(f' ... Checking Pipeline & Profile in [Header]')
 name_found=False  ## PipelineName is required
 profile_found=False ## PipelineProfile is required
@@ -271,16 +269,14 @@ for row in sectionDict['[Header]']:
         header_pipelinename = sectionDict['[Header]'][row][1]
         print(f' ... ... PipelineName: {header_pipelinename}')
         name_found=True
-        if not header_pipelinename in pipelineDict.keys():
-            raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
+        # if not header_pipelinename in pipelineDict.keys():
+        #     raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
     if row == 'PipelineProfile':
         header_pipelineprofile = sectionDict['[Header]'][row][1]
         print(f' ... ... PipelineProfile: {header_pipelineprofile}')
         profile_found=True
-        if not header_pipelineprofile in pipelineDict[header_pipelinename]:
-            raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
-
-
+        # if not header_pipelineprofile in pipelineDict[header_pipelinename]:
+        #     raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
 if not name_found: raise ValueError('[Header] param "PipelineName" must be specified' )
 if not profile_found: raise ValueError('[Header] param "PipelineProfile" must be specified' )
 print(f' ... ... ok')
@@ -780,7 +776,8 @@ else:
                 ## [Header] - Harmonize Params
                 ## Step through all rows in the Header dict. Temp save each as current_row. Check and print to file.
                 print(f' ... ... Harmonizing [Header] params with [Data] columns')
-                for row in sectionDict[s]:
+
+                for row in sectionDict['[Header]']:
                     current_row = ['']*n_columns
                     current_row[0] = sectionDict[s][row][0]
                     current_row[1] = sectionDict[s][row][1]
@@ -789,16 +786,27 @@ else:
                     # If param found in params_dict use harmonize_header_params function to replace [Header] value (if needed). Note that all blank columns have allready been removed
                     if current_row[0] in params_dict.keys():
                         current_row = harmonize_header_params(input_row=current_row, data_mat=dfs[project], data_col=params_dict[current_row[0]]['DataCol'], allowMultiple=params_dict[current_row[0]]['Catenate'])
+
+                    # check Pipeline & Profile (stop if non-allowed PipelineName or PipelineProfile)
+                    if current_row[0] == 'PipelineName':
+                        header_pipelinename = current_row[1]
+                        print(f' ... ... ... PipelineName: {header_pipelinename}')
+                        if not header_pipelinename in pipelineDict.keys():
+                            raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
+                    if current_row[0] 'PipelineProfile':
+                        header_pipelineprofile = current_row[1]
+                        print(f' ... ... ... PipelineProfile: {header_pipelineprofile}')
+                        if not header_pipelineprofile in pipelineDict[header_pipelinename]:
+                            raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
                     ## Write row to file
                     if not all(elem == '' for elem in current_row):
                         writer.writerow(current_row)
-
             if s == '[Reads]':
                 writer.writerow(['']*n_columns)
                 readsrow = ['']*n_columns
                 readsrow[0] = '[Reads]'
                 writer.writerow(readsrow)
-                for row in sectionDict[s]:
+                for row in sectionDict['[Reads]']:
                     if not all(elem == '' for elem in sectionDict[s][row]):
                         current_row = ['']*n_columns
                         current_row[0] = sectionDict[s][row][0]
