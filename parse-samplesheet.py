@@ -101,7 +101,7 @@ params_dict = {
     'PipelineName': {'DataCol': 'PipelineName','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineVersion': {'DataCol': 'PipelineVersion','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineProfile': {'DataCol': 'PipelineProfile','Catenate': False,'RegExp': '','Controlled': True},
-    'Species': {'DataCol': 'Sample_Species','Catenate': False,'RegExp': '','Controlled':False},
+    'ReferenceGenome': {'DataCol': 'Sample_ReferenceGenome','Catenate': False,'RegExp': '','Controlled':False},
     'email-ctg': {'DataCol': 'email_ctg','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
     'name-pi': {'DataCol': 'name_pi','Catenate': False,'RegExp': '','Controlled':False},
     'email-customer': {'DataCol': 'email_customer','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
@@ -673,6 +673,15 @@ else:
             headerrow = ['']*n_columns #
             headerrow[0] = '[Header]'
             writer.writerow(headerrow) # write first row of file as is - max number of comma separators needed for bcl2fastq
+
+            ## For a demux sheet, add the bcl2fastq arguments parameter
+              ## not implemented yet, but a must if demux of runs that use index kits with different index lengths in same run
+              ##  if so, multiple demux sheets must be generated
+            bcl2fastArgRow = ['']*n_columns
+            bcl2fastArgRow[0] = ['bcl2fastqArg']
+            if bcl2fastq_argument: bcl2fastArgRow[1] = bcl2fastq_argument
+            writer.writerow(bcl2fastArgRow)
+
             for row in sectionDict[s]: # step through all rows of the [Header] dict list
 
                 if row == 'SharedFlowCell':
