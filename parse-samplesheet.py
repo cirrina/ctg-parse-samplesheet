@@ -744,7 +744,7 @@ else:
     #   - When writing these individual samplesheets update metadata (may have gone from 'multiple' to unique)
     #        - RunFolder
     #        - ProjectID
-    #        - Species/Sample_Species
+    #        - Species/Sample_Species//ReferenceGenome
     #        - PipelineProfile
     #        - ... etc
 
