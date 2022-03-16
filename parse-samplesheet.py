@@ -574,7 +574,7 @@ else:
     fh_out = open(sheet_out,'w', encoding='utf-8')
     # create the csv writer
     writer = csv.writer(fh_out, lineterminator='\n')
-    print(f' ... writing demux specific samplesheet:  {sheet_out}')
+    print(f' ... writing parsed samplesheet:  {sheet_out}')
     n_columns = df.shape[1]
     for s in sectionDict.keys():
         if s == '[Header]':
@@ -660,11 +660,12 @@ else:
     print(f' ... ------------------------------------- ')
     print(f' ... writing demux specific samplesheet:')
     if header_runfolder:
-        print(f' ... ... naming according to runfolder:  {sheet_out}')
         sheet_out = f'CTG_SampleSheet.demux.{header_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
+        print(f' ... ... naming according to runfolder:  {sheet_out}')
     else:
-        print(f' ... ... no runfolder detected, naming only with demux:  {sheet_out}')
         sheet_out = f'CTG_SampleSheet.demux.csv'
+        print(f' ... ... no runfolder detected, naming only with demux:  {sheet_out}')
+
     fh_out = open(sheet_out,'w', encoding='utf-8')
     # create the csv writer
     writer = csv.writer(fh_out, lineterminator='\n')
@@ -677,11 +678,12 @@ else:
             writer.writerow(headerrow) # write first row of file as is - max number of comma separators needed for bcl2fastq
 
             ## For a demux sheet, add the bcl2fastq arguments parameter
-              ## not implemented yet, but a must if demux of runs that use index kits with different index lengths in same run
-              ##  if so, multiple demux sheets must be generated
+            ## not implemented yet, but a must if demux of runs that use index kits with different index lengths in same run
+            ##  if so, multiple demux sheets must be generated
             bcl2fastArgRow = ['']*n_columns
             bcl2fastArgRow[0] = ['bcl2fastqArg']
-            if bcl2fastq_argument: bcl2fastArgRow[1] = bcl2fastq_argument
+            bcl2fastArgRow[1] = ['']
+            #if bcl2fastq_argument: bcl2fastArgRow[1] = bcl2fastq_argument
             writer.writerow(bcl2fastArgRow)
 
             for row in sectionDict[s]: # step through all rows of the [Header] dict list
