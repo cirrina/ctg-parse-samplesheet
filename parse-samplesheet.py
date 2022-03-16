@@ -42,7 +42,7 @@ collapse_lanes = args.collapselanes ## Like allow_dups_over_lanes, affects proje
 ##  Functions
 ## -------------------------------
 ## extract param function. Return value from second instance if found. else return blank
-def get_param(param_name=None, myDict=None]):
+def get_param(param_name=None, myDict=None):
     if param_name in myDict.keys(): return(myDict[param_name][1])
     else: return('')
 ## end function
