@@ -681,8 +681,8 @@ else:
             ## not implemented yet, but a must if demux of runs that use index kits with different index lengths in same run
             ##  if so, multiple demux sheets must be generated
             bcl2fastArgRow = ['']*n_columns
-            bcl2fastArgRow[0] = ['bcl2fastqArg']
-            bcl2fastArgRow[1] = ['']
+            bcl2fastArgRow[0] = 'bcl2fastqArg'
+            bcl2fastArgRow[1] = ''
             #if bcl2fastq_argument: bcl2fastArgRow[1] = bcl2fastq_argument
             writer.writerow(bcl2fastArgRow)
 
