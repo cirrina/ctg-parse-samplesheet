@@ -100,7 +100,7 @@ pipelineDict = {
 default_regexp='[^0-9a-zA-Z\_\.\-\+\@\(\)\;\,\'\"\| ]+'
 
 params_dict = {
-    'ProjectID': {'DataCol': 'Sample_Project','Catenate': True,'RegExp': '[^0-9a-zA-Z\_]+','Controlled': False},
+    'ProjectID': {'DataCol': 'Sample_Project','Catenate': True,'RegExp': '[^0-9a-zA-Z\_\|]+','Controlled': False},
     'PipelineName': {'DataCol': 'PipelineName','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineVersion': {'DataCol': 'PipelineVersion','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineProfile': {'DataCol': 'PipelineProfile','Catenate': False,'RegExp': '','Controlled': True},
@@ -786,7 +786,7 @@ else:
                     if row == 'NumberSamples':
                         mykeys=sectionDict['[Header]'].keys()
                         n_samples = dfs[project].shape[0]
-                        sectionDict[s][row][1] = n_samples
+                        current_row[1] = n_samples
                         print(f' ... ... setting "NumberSamples" to: {n_samples}')
 
                     ## harmonize_header_params function
