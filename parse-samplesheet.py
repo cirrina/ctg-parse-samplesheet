@@ -106,11 +106,11 @@ params_dict = {
     'PipelineProfile': {'DataCol': 'PipelineProfile','Catenate': False,'RegExp': '','Controlled': True},
     'Species': {'DataCol': 'Sample_Species','Catenate': False,'RegExp': '','Controlled':False},
     'ReferenceGenome': {'DataCol': 'Sample_ReferenceGenome','Catenate': False,'RegExp': '','Controlled':False},
-    'email-ctg-lab': {'DataCol': 'email_ctg_lab','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
-    'email-ctg-bnf': {'DataCol': 'email_ctg_bnf','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
-    'email-ctg-all': {'DataCol': 'email_ctg_all','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
+    'email-ctg-lab': {'DataCol': 'email_ctg_lab','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\|]+','Controlled': False},
+    'email-ctg-bnf': {'DataCol': 'email_ctg_bnf','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\|]+','Controlled': False},
+    'email-ctg-all': {'DataCol': 'email_ctg_all','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\|]+','Controlled': False},
     'name-pi': {'DataCol': 'name_pi','Catenate': False,'RegExp': '','Controlled':False},
-    'email-customer': {'DataCol': 'email_customer','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\;]+','Controlled': False},
+    'email-customer': {'DataCol': 'email_customer','Catenate': False,'RegExp': '[^0-9a-zA-Z\.\-\_\@\|]+','Controlled': False},
     'Assay': {'DataCol': 'Assay','Catenate': False,'RegExp': '','Controlled': True},
     'IndexAdapters': {'DataCol': 'IndexAdapters','Catenate': False,'RegExp': '','Controlled': True},
     'Strandness': {'DataCol': 'Sample_Strandness','Catenate': False,'RegExp': '','Controlled': True},
@@ -198,9 +198,9 @@ with open(sheet_name, 'r', encoding='utf-8-sig') as csvfile:
 
                 ## All rows should be checked for illegal caharacters defined by 'default_regexp'
                 p = re.compile('[\,]')
-                substring=p.sub(';', row[1])
+                substring=p.sub(' ', row[1])
                 if not substring==row[1]:
-                    print(f' ... ... ... Warning, illegal comma in {row[0]}: replacing to {substring}')
+                    print(f' ... ... ... Warning, illegal comma in {row[0]}: replacing with {substring}')
                     row[1]=substring
 
                 ## Fix illegal whitespaces - replace all spaces with regular
@@ -771,12 +771,7 @@ else:
                 headerrow[0] = '[Header]'
                 writer.writerow(headerrow) # write first row of file as is - max number of comma separators needed for bcl2fastq
 
-                ## set n samples
-                if row == 'NumberSamples':
-                    mykeys=sectionDict['[Header]'].keys()
-                    n_samples = dfs[project].shape[0]
-                    sectionDict[s][row][1] = n_samples
-                    print(f' ... ... setting "NumberSamples" to: {n_samples}')
+
 
                 ## [Header] - Harmonize Params
                 ## Step through all rows in the Header dict. Temp save each as current_row. Check and print to file.
@@ -787,12 +782,12 @@ else:
                     current_row[0] = sectionDict[s][row][0]
                     current_row[1] = sectionDict[s][row][1]
 
+                    ## set n samples
                     if row == 'NumberSamples':
                         mykeys=sectionDict['[Header]'].keys()
-                        n_samples = df.shape[0]
-                        s_samples = sectionDict[s][row][1]
+                        n_samples = dfs[project].shape[0]
                         sectionDict[s][row][1] = n_samples
-                        print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
+                        print(f' ... ... setting "NumberSamples" to: {n_samples}')
 
                     ## harmonize_header_params function
                     # If param found in params_dict use harmonize_header_params function to replace [Header] value (if needed). Note that all blank columns have allready been removed
