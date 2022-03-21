@@ -111,7 +111,7 @@ singularity exec --bind /projects/fs1/ ${singularity_contatiner} python ${script
   --forcefastqnames ${forcefastqnames} \
   --forcebamnames ${forcebamnames} \
   --allowdupsoverlanes ${allowdupsoverlanes} \
-  --collapselanes ${collapselanes} 2>&1 | tee -a parse-samplesheet.log
+  --collapselanes ${collapselanes}
 
 exit_code=$(echo $?)
 if [[ ${exit_code}==0 ]]; then
@@ -120,7 +120,7 @@ if [[ ${exit_code}==0 ]]; then
 fi
 
 ## NOTE! change if allow multiple demux in one runfolder
-touch ctg.labsheet.${sheetID.done
+touch ctg.labsheet.${sheetID}.done
 
 
 # cat ./parse-samplesheet.log
