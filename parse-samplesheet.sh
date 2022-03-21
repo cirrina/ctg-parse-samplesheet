@@ -95,6 +95,8 @@ if [ ! -f ${samplesheet} ]; then
   exit 1
 fi
 
+sheetID=$(echo $samplesheet | sed "s/CTG_SampleSheet.//g" | sed "s/.csv//g")
+
 ### Exec python script
 scriptdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # python --version
@@ -110,6 +112,15 @@ singularity exec --bind /projects/fs1/ ${singularity_contatiner} python ${script
   --forcebamnames ${forcebamnames} \
   --allowdupsoverlanes ${allowdupsoverlanes} \
   --collapselanes ${collapselanes} 2>&1 | tee -a parse-samplesheet.log
+
+exit_code=$(echo $?)
+if [[ ${exit_code}==0 ]]; then
+      echo "... WARNING : python script failed"
+      exit 1
+fi
+
+## NOTE! change if allow multiple demux in one runfolder
+touch ctg.labsheet.${sheetID.done
 
 
 # cat ./parse-samplesheet.log
