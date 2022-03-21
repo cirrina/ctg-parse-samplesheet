@@ -109,9 +109,10 @@ singularity exec --bind /projects/fs1/ ${singularity_contatiner} python ${script
   --forcefastqnames ${forcefastqnames} \
   --forcebamnames ${forcebamnames} \
   --allowdupsoverlanes ${allowdupsoverlanes} \
-  --collapselanes ${collapselanes} > parse-samplesheet.log
+  --collapselanes ${collapselanes} 2>&1 | tee -a parse-samplesheet.log
 
 
-cat ./parse-samplesheet.log
+# cat ./parse-samplesheet.log
+
 echo ' ... ------------------------------------- '
 echo '  === OK ==='

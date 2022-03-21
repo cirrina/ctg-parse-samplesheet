@@ -172,6 +172,9 @@ with open(sheet_name, 'r', encoding='utf-8-sig') as csvfile:
         # if myLine==0 and row[0]!='[Header]': Warn if first line is not [Header]
         if myLine==0: firstrow = row # save first row - to get max no of columns/commas
         myLine+=1
+        if len(row) < 2: # quickfix for if csv file has no proper commas (only the param listed but no comma or value).
+            row.append('') # Add a blank value
+
         ## do not read all blank lines. skip these!
         if all(elem == '' for elem in row):
             if row_warning_blank==0: print(' ... ... one ore more blank rows, skipping these')
@@ -783,6 +786,13 @@ else:
                     current_row = ['']*n_columns
                     current_row[0] = sectionDict[s][row][0]
                     current_row[1] = sectionDict[s][row][1]
+
+                    if row == 'NumberSamples':
+                        mykeys=sectionDict['[Header]'].keys()
+                        n_samples = df.shape[0]
+                        s_samples = sectionDict[s][row][1]
+                        sectionDict[s][row][1] = n_samples
+                        print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
 
                     ## harmonize_header_params function
                     # If param found in params_dict use harmonize_header_params function to replace [Header] value (if needed). Note that all blank columns have allready been removed
