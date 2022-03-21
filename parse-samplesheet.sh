@@ -114,7 +114,7 @@ singularity exec --bind /projects/fs1/ ${singularity_contatiner} python ${script
   --collapselanes ${collapselanes}
 
 exit_code=$(echo $?)
-if [[ ${exit_code}==0 ]]; then
+if [[ ${exit_code} != 0 ]]; then
       echo "... WARNING : python script failed"
       exit 1
 fi
