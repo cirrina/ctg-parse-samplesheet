@@ -120,7 +120,7 @@ if [[ ${exit_code} != 0 ]]; then
 fi
 
 ## NOTE! change if allow multiple demux in one runfolder
-touch ctg.labsheet.${sheetID}.done
+touch ctg.${sheetID}.done
 
 
 # cat ./parse-samplesheet.log
