@@ -111,7 +111,7 @@ singularity exec --bind /projects/fs1/ ${singularity_contatiner} python ${script
   --forcefastqnames ${forcefastqnames} \
   --forcebamnames ${forcebamnames} \
   --allowdupsoverlanes ${allowdupsoverlanes} \
-  --collapselanes ${collapselanes}
+  --collapselanes ${collapselanes} > parse-samplesheet.log
 
 exit_code=$(echo $?)
 if [[ ${exit_code} != 0 ]]; then
