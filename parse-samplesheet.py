@@ -47,6 +47,8 @@ def get_param(param_name=None, myDict=None):
     else: return('')
 ## end function
 
+# Get batchid from labsheet name - add to demux-samplesheet
+batchid_sheetname=sheet_name.split(".")[2]
 
 ## -------------------------------
 ##  Params temp debug local
@@ -663,7 +665,8 @@ else:
     print(f' ... ------------------------------------- ')
     print(f' ... writing demux specific samplesheet:')
     if header_runfolder:
-        sheet_out = f'CTG_SampleSheet.demux.{header_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
+        # sheet_out = f'CTG_SampleSheet.demux.{header_runfolder}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
+        sheet_out = f'CTG_SampleSheet.demux.{batchid_sheetname}.csv' # the runfolder is added to samplesheet name. defaults to current dir.
         print(f' ... ... naming according to runfolder:  {sheet_out}')
     else:
         sheet_out = f'CTG_SampleSheet.demux.csv'
