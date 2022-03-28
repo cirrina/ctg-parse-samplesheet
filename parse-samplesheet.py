@@ -118,7 +118,7 @@ params_dict = {
     'Strandness': {'DataCol': 'Sample_Strandness','Catenate': False,'RegExp': '','Controlled': True},
     'FragmentationTime': {'DataCol': 'fragmentation_time','Catenate': False,'RegExp': '','Controlled': True},
     'PCR-cycles': {'DataCol': 'pcr_cycles','Catenate': False,'RegExp': '','Controlled': True},
-    'Paired': {'DataCol': 'Sample_Paired','Catenate': False,'RegExp': '','Controlled': True},
+    'PairedReads': {'DataCol': 'Sample_PairedReads','Catenate': False,'RegExp': '','Controlled': True},
     'PoolConcNovaSeq': {'DataCol': 'Pool_Conc_NovaSeq','Catenate': False,'RegExp': '','Controlled': True},
     'PoolMolarityNovaSeq': {'DataCol': 'Pool_Molarity_NovaSeq','Catenate': False,'RegExp': '','Controlled': True}}
 
@@ -342,12 +342,12 @@ else:
         ## Project_ID
 
         # print(row)
-        if row == 'Paired':
-            print(f' ... ... found [Header] param "Paired": checking ...')
+        if row == 'PairedReads':
+            print(f' ... ... found [Header] param "PairedReads": checking ...')
             header_paired = sectionDict['[Header]'][row][1]
             if not header_paired in ['true','false']:
                 print(f' ... ... ... {row[1]}')
-                raise ValueError('[Header] param "Paired" incorrectly specified. Set to "true" or "false"' )
+                raise ValueError('[Header] param "PairedReads" incorrectly specified. Set to "true" or "false"' )
             print(f' ... ... ... ok')
         if row == 'Strandness':
             print(f' ... ... found [Header] param "Strandness": checking ...')
@@ -442,13 +442,13 @@ else:
     # blc2fastq filename logic:
     #  **{samplename}\_{S1}\_{L001}\_{R1}\_001.fastq.gz**
     #  Using the 'noLaneSplitting' flag, L001 will NOT be in fastq name
-    # Requres that the global 'Paired' parameter is defined in [Header] section
+    # Requres that the global 'PairedReads' parameter is defined in [Header] section
 
     if fastq_suffix: # First check if fastq suffix is provided
         print(f' ... ... Fastq suffix provided ("{fastq_suffix}"). Adding fastq file names to [Data] section' )
-        ## header paired defined above from [Header]-Paried para (true/false). If not raise error
+        ## header PairedReads defined above from [Header]-Paried para (true/false). If not raise error
         if not header_paired:
-            raise ValueError(' ... ... ... Error: "Paired" (true or false) must be defined in [Header] section when adding fastq files!' )
+            raise ValueError(' ... ... ... Error: "PairedReads" (true or false) must be defined in [Header] section when adding fastq files!' )
         ## If fastq datacolumns present then requre
         datacols = df.keys().tolist()
         if not force_fastq_names and any([dc in ['fastq_1','fastq_2'] for dc in datacols]):
