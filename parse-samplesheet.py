@@ -86,7 +86,7 @@ sectionDict = {
 pipelineDict = {
     'seqonly': ['fastq_demux','rawdata_runfolder'],
     'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','fastq_demux','rawdata_runfolder'],
-    'dna-panel': ['panel_gmck','panel_gms','fastq_demux','rawdata_runfolder'],
+    'dna-panel': ['panel_twist_comprehensive_dragen','panel_gmck_dragen','panel_gms_dragen','bam_alignment_dragen','fastq_demux','rawdata_runfolder'],
     'dna-wgs': ['fastq_demux','rawdata_runfolder']
     }
 
