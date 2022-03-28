@@ -84,11 +84,10 @@ sectionDict = {
 
 ## Pipeline dict. Used to check allowed Pipeline & pipeline profiles
 pipelineDict = {
-    'seqonly': ['demux','rawdata'],
-    'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','demux','rawdata'],
-    'dna-panel': ['gmck','gms','demux','rawdata'],
-    'dna-wes': ['demux','rawdata'],
-    'dna-wgs': ['demux','rawdata']
+    'seqonly': ['fastq_demux','rawdata_runfolder'],
+    'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','fastq_demux','rawdata_runfolder'],
+    'dna-panel': ['panel_gmck','panel_gms','fastq_demux','rawdata_runfolder'],
+    'dna-wgs': ['fastq_demux','rawdata_runfolder']
     }
 
 
@@ -291,8 +290,8 @@ print(f' ... ... ok')
 ##  --- IF ---  SEQONLY -- RAWDATA  --
 ##  write CTG_SampleSheet.rawdata.cfg and exit
 # =========================================================================
-if header_pipelinename=='seqonly' and header_pipelineprofile=='rawdata':
-    print(f' ... Pipeline is SeqOnly and rawdata delivery. ')
+if header_pipelinename=='seqonly' and header_pipelineprofile=='rawdata_runfolder':
+    print(f' ... Pipeline is SeqOnly and rawdata_runfolder delivery. ')
 
     ## extract the important
     sheet_out = f'CTG_SampleSheet.rawdata.csv' # the runfolder is added to samplesheet name. defaults to current dir.
