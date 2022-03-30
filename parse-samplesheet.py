@@ -309,15 +309,15 @@ if header_pipelinename=='seqonly' and header_pipelineprofile=='rawdata_runfolder
     writer.writerow(['projid',my_param])
 
     ## Write email-ctg (cc)
-    my_param = get_param(param_name='email-ctg', myDict=sectionDict['[Header]'])
+    my_param = get_param(param_name='email-ctg-all', myDict=sectionDict['[Header]'])
     writer.writerow(['cc',my_param])
 
-    ## Write AutoDelivery
-    my_param = get_param(param_name='email-customer', myDict=sectionDict['[Header]'])
-    if not my_param or not my_param=='true':
-        writer.writerow(['autodeliver','n'])
-    else:
-        writer.writerow(['autodeliver','y'])
+    ## Write AutoDelivery (always FALSE)
+    #my_param = get_param(param_name='email-customer', myDict=sectionDict['[Header]'])
+    #if not my_param or not my_param=='true':
+    writer.writerow(['autodeliver','n'])
+    #else:
+    #    writer.writerow(['autodeliver','y'])
 
     fh_out.close()
     print(f' ... ... ok')
