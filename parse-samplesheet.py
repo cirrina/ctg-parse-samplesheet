@@ -758,100 +758,125 @@ else:
     #        - ... etc
 
     for project in all_projects:
-        project_out = f'CTG_SampleSheet.rnaseq.{project}.csv'
-        print(f' ... ------------------------------------- ')
-        print(f' ... writing Project specific samplesheet:  {project_out}')
-        fh_out = open(project_out,'w', encoding='utf-8')
-        writer = csv.writer(fh_out, lineterminator='\n')
-        n_columns = dfs[project].shape[1]
 
-        for s in sectionDict.keys():
+        ## First scan each [Header] for project and determine what PipelineName and PipelineProfile
+        ## Let the pipelinenames and profiles determine if to save to file and what project specific samplesheet name
+        for row in sectionDict['[Header]']:
+            if current_row[0] == 'PipelineName':
+                header_pipelinename = current_row[1]
+                print(f' ... ... ... PipelineName: {header_pipelinename}')
+                if not header_pipelinename in pipelineDict.keys():
+                    raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
+            if current_row[0] == 'PipelineProfile':
+                header_pipelineprofile = current_row[1]
+                print(f' ... ... ... PipelineProfile: {header_pipelineprofile}')
+                if not header_pipelineprofile in pipelineDict[header_pipelinename]:
+                    raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
 
-            ## [Header] - Harmonize Params
-            if s == '[Header]':
-                headerrow = ['']*n_columns
-                headerrow[0] = '[Header]'
-                writer.writerow(headerrow) # write first row of file as is - max number of comma separators needed for bcl2fastq
+        if not header_pipelinename in ['ctg-rnaseq','dna-panel','dna-wgs']:
+            continue
+        elif header_pipelineprofile in ['demux']:
+            continue
+        else:
+            if header_pipelinename == 'ctg-rnaseq':
+                project_out = f'CTG_SampleSheet.rnaseq.{project}.csv'
+            elif header_pipelinename in ['dna-panel','dna-wgs']:
+                if header_pipelineprofile in ['panel_gmck_dragen','panel_gms_dragen','panel_twist_comprehensive_dragen', 'bam_alignment_dragen']:
+                    project_out = f'CTG_SampleSheet.dna-dragen.{project}.csv'
+                else:
+                    project_out = f'CTG_SampleSheet.unknown.{project}.csv'
 
+            print(f' ... ------------------------------------- ')
+            print(f' ... writing Project specific samplesheet:  {project_out}')
+            fh_out = open(project_out,'w', encoding='utf-8')
+            writer = csv.writer(fh_out, lineterminator='\n')
+            n_columns = dfs[project].shape[1]
 
+            for s in sectionDict.keys():
 
                 ## [Header] - Harmonize Params
-                ## Step through all rows in the Header dict. Temp save each as current_row. Check and print to file.
-                print(f' ... ... Harmonizing [Header] params with [Data] columns')
+                if s == '[Header]':
+                    headerrow = ['']*n_columns
+                    headerrow[0] = '[Header]'
+                    writer.writerow(headerrow) # write first row of file as is - max number of comma separators needed for bcl2fastq
 
-                for row in sectionDict['[Header]']:
-                    current_row = ['']*n_columns
-                    current_row[0] = sectionDict[s][row][0]
-                    current_row[1] = sectionDict[s][row][1]
+                    ## [Header] - Harmonize Params
+                    ## Step through all rows in the Header dict. Temp save each as current_row. Check and print to file.
+                    print(f' ... ... Harmonizing [Header] params with [Data] columns')
 
-                    ## set n samples
-                    if row == 'NumberSamples':
-                        mykeys=sectionDict['[Header]'].keys()
-                        n_samples = dfs[project].shape[0]
-                        current_row[1] = n_samples
-                        print(f' ... ... setting "NumberSamples" to: {n_samples}')
-
-                    ## harmonize_header_params function
-                    # If param found in params_dict use harmonize_header_params function to replace [Header] value (if needed). Note that all blank columns have allready been removed
-                    if current_row[0] in params_dict.keys():
-                        current_row = harmonize_header_params(input_row=current_row, data_mat=dfs[project], data_col=params_dict[current_row[0]]['DataCol'], allowMultiple=params_dict[current_row[0]]['Catenate'])
-
-                    # check Pipeline & Profile (stop if non-allowed PipelineName or PipelineProfile)
-                    if current_row[0] == 'PipelineName':
-                        header_pipelinename = current_row[1]
-                        print(f' ... ... ... PipelineName: {header_pipelinename}')
-                        if not header_pipelinename in pipelineDict.keys():
-                            raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
-                    if current_row[0] == 'PipelineProfile':
-                        header_pipelineprofile = current_row[1]
-                        print(f' ... ... ... PipelineProfile: {header_pipelineprofile}')
-                        if not header_pipelineprofile in pipelineDict[header_pipelinename]:
-                            raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
-                    ## Write row to file
-                    if not all(elem == '' for elem in current_row):
-                        writer.writerow(current_row)
-            if s == '[Reads]':
-                writer.writerow(['']*n_columns)
-                readsrow = ['']*n_columns
-                readsrow[0] = '[Reads]'
-                writer.writerow(readsrow)
-                for row in sectionDict['[Reads]']:
-                    if not all(elem == '' for elem in sectionDict[s][row]):
+                    for row in sectionDict['[Header]']:
                         current_row = ['']*n_columns
                         current_row[0] = sectionDict[s][row][0]
                         current_row[1] = sectionDict[s][row][1]
-                        writer.writerow(current_row)
-            if s == '[Settings]':
-                writer.writerow(['']*n_columns)
-                settingsrow = ['']*n_columns
-                settingsrow[0] = '[Settings]'
-                writer.writerow(settingsrow)
-                for row in sectionDict[s]:
-                    if not all(elem == '' for elem in sectionDict[s][row]):
-                        current_row = ['']*n_columns
-                        current_row[0] = sectionDict[s][row][0]
-                        current_row[1] = sectionDict[s][row][1]
-                        writer.writerow(current_row)
-            if s == '[Data]':
-                writer.writerow(['']*n_columns)
-                datarow = ['']*n_columns
-                datarow[0] = '[Data]'
-                writer.writerow(datarow)
-                fh_out.close()
-                with open(project_out, 'a') as f:
-                    ## if collapse lanes * only keep unique sample-fastqs mappings in sample sheet
-                    ## only relevant if fastq file names are built (fastq_suffix given)
-                    dfs_write = dfs[project]
-                    if collapse_lanes and fastq_suffix and "Lane" in df.columns:
-                        # dfs_write.drop('Lane', axis=1, inplace=True) # lane is no longer relevant -
-                        dfs_write.drop_duplicates(subset=['Sample_ID'], inplace=True) ## collapse - drop rows with duplicated fastq files
-                    dfs[project].to_csv(f, header=True, index=False)
-        print(f' ... ------------------------------------- ')
-    print(' ... ok ... ')
-    # close files
-    f.close()
-    csvfile.close()
-    #fh_out.close()
+
+                        ## set n samples
+                        if row == 'NumberSamples':
+                            mykeys=sectionDict['[Header]'].keys()
+                            n_samples = dfs[project].shape[0]
+                            current_row[1] = n_samples
+                            print(f' ... ... setting "NumberSamples" to: {n_samples}')
+
+                        ## harmonize_header_params function
+                        # If param found in params_dict use harmonize_header_params function to replace [Header] value (if needed). Note that all blank columns have allready been removed
+                        if current_row[0] in params_dict.keys():
+                            current_row = harmonize_header_params(input_row=current_row, data_mat=dfs[project], data_col=params_dict[current_row[0]]['DataCol'], allowMultiple=params_dict[current_row[0]]['Catenate'])
+
+                        # check Pipeline & Profile (stop if non-allowed PipelineName or PipelineProfile)
+                        # if current_row[0] == 'PipelineName':
+                        #     header_pipelinename = current_row[1]
+                        #     print(f' ... ... ... PipelineName: {header_pipelinename}')
+                        #     if not header_pipelinename in pipelineDict.keys():
+                        #         raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
+                        # if current_row[0] == 'PipelineProfile':
+                        #     header_pipelineprofile = current_row[1]
+                        #     print(f' ... ... ... PipelineProfile: {header_pipelineprofile}')
+                        #     if not header_pipelineprofile in pipelineDict[header_pipelinename]:
+                        #         raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
+                        ## Write row to file
+                        if not all(elem == '' for elem in current_row):
+                            writer.writerow(current_row)
+                if s == '[Reads]':
+                    writer.writerow(['']*n_columns)
+                    readsrow = ['']*n_columns
+                    readsrow[0] = '[Reads]'
+                    writer.writerow(readsrow)
+                    for row in sectionDict['[Reads]']:
+                        if not all(elem == '' for elem in sectionDict[s][row]):
+                            current_row = ['']*n_columns
+                            current_row[0] = sectionDict[s][row][0]
+                            current_row[1] = sectionDict[s][row][1]
+                            writer.writerow(current_row)
+                if s == '[Settings]':
+                    writer.writerow(['']*n_columns)
+                    settingsrow = ['']*n_columns
+                    settingsrow[0] = '[Settings]'
+                    writer.writerow(settingsrow)
+                    for row in sectionDict[s]:
+                        if not all(elem == '' for elem in sectionDict[s][row]):
+                            current_row = ['']*n_columns
+                            current_row[0] = sectionDict[s][row][0]
+                            current_row[1] = sectionDict[s][row][1]
+                            writer.writerow(current_row)
+                if s == '[Data]':
+                    writer.writerow(['']*n_columns)
+                    datarow = ['']*n_columns
+                    datarow[0] = '[Data]'
+                    writer.writerow(datarow)
+                    fh_out.close()
+                    with open(project_out, 'a') as f:
+                        ## if collapse lanes * only keep unique sample-fastqs mappings in sample sheet
+                        ## only relevant if fastq file names are built (fastq_suffix given)
+                        dfs_write = dfs[project]
+                        if collapse_lanes and fastq_suffix and "Lane" in df.columns:
+                            # dfs_write.drop('Lane', axis=1, inplace=True) # lane is no longer relevant -
+                            dfs_write.drop_duplicates(subset=['Sample_ID'], inplace=True) ## collapse - drop rows with duplicated fastq files
+                        dfs[project].to_csv(f, header=True, index=False)
+            print(f' ... ------------------------------------- ')
+        print(' ... ok ... ')
+        # close files
+        f.close()
+        csvfile.close()
+        #fh_out.close()
 ## end else (if not) is rawdata delivery
 
 
