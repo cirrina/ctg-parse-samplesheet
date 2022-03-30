@@ -351,8 +351,8 @@ else:
         if row == 'Strandness':
             print(f' ... ... found [Header] param "Strandness": checking ...')
             header_strandness = sectionDict['[Header]'][row][1]
-            if not header_strandness in ['forward','reverse']:
-                raise ValueError('[Header] param "Strandness" incorrectly specified. Set to "forward" or "reverse"' )
+            #if not header_strandness in ['forward','reverse']:
+            #    raise ValueError('[Header] param "Strandness" incorrectly specified. Set to "forward" or "reverse"' )
             print(f' ... ... ... ok')
         # For Illumina RunFolder:
         # If not defined, RunFolder to Execution dir.
