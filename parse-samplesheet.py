@@ -489,6 +489,7 @@ else:
                     print(f' ... ... ... PipelineName is {pipe} and Sample_TumorNormal is {tumor}. Forcing bam_suffix to _tumor.bam')
                     bam_suffix_sample = "_tumor.bam"
                 elif pipe == "dna-dragen":
+                    print(f' ... ... ... PipelineName is {pipe}. Forcing bam_suffix to .bam')
                     bam_suffix_sample = ".bam"
                 else:
                     bam_suffix_sample = bam_suffix
