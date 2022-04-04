@@ -472,7 +472,7 @@ else:
         print(f' ... ... no fastq_suffix provided. Will not add fastq file names to [Data] section' )
 
     if bam_suffix:
-	print(f' ... ... bam suffix provided  ("{bam_suffix}"). Adding bam file names to [Data] section' )
+        print(f' ... ... bam suffix provided  ("{bam_suffix}"). Adding bam file names to [Data] section' )
         datacols = df.keys().tolist()
 
         if not force_bam_names and any([dc in ['bam'] for dc in datacols]):
