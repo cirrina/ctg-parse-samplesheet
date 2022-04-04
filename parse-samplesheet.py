@@ -472,24 +472,55 @@ else:
         print(f' ... ... no fastq_suffix provided. Will not add fastq file names to [Data] section' )
 
     if bam_suffix:
-        print(f' ... ... bam suffix provided  ("{bam_suffix}"). Adding bam file names to [Data] section' )
+	print(f' ... ... bam suffix provided  ("{bam_suffix}"). Adding bam file names to [Data] section' )
         datacols = df.keys().tolist()
+
         if not force_bam_names and any([dc in ['bam'] for dc in datacols]):
             print(' ... ... ... Error: "bam" [Data] column detected' )
             print(' ... ... ... You must set "force_bam_names" to overwrite this column')
             print(' ... ... ... skipping ...' )
-        if force_bam_names or not any([dc in ['bam'] for dc in datacols]):
-            row_i = 0
+
+        else:
             bam = []
-            for sample_id in df["Sample_ID"].tolist():
-                bam.append(f'{sample_id}{bam_suffix}')
-                row_i+=1
+            for idx, row in df.iterrows():
+                tumor = row.Sample_TumorNormal
+                pipe = row.PipelineName
+                if pipe == "dna-dragen" and tumor == "tumor":
+                    print(f' ... ... ... PipelineName is {pipe} and Sample_TumorNormal is {tumor}. Forcing bam_suffix to _tumor.bam')
+                    bam_suffix_sample = "_tumor.bam"
+                elif pipe == "dna-dragen":
+                    bam_suffix_sample = ".bam"
+                else:
+                    bam_suffix_sample = bam_suffix
+
+		bam.append(f'{sample_id}{bam_suffix_sample}')
             df["bam"] = bam
-            print(f' ... ... ... added bam file names using "{bam_suffix}" suffix' )
+
     else:
         print(f' ... ... no bam_suffix provided. Will not add bam file names to [Data] section' )
     print(f' ... ... ... ok' )
 
+
+    print(f' ... ... ... ok' )
+        if "PipelineName" in df.columns and "Sample_TumorNormal" in df.columns:
+            print(' ... ... ... PipelineName and Sample_TumorNormal columns identified ..')
+            bam = []
+            for idx, row in df.iterrows():
+                tumor = row.Sample_TumorNormal
+                pipe = row.PipelineName
+                if pipe == "dna-dragen" and tumor == "tumor":
+                    bamname = row.Sample_ID + "_tumor.bam"
+                    bam.append(bamname)
+                elif pipe == "dna-dragen":
+                    bamname = row.Sample_ID + ".bam"
+                    bam.append(bamname)
+        else:
+            bamname = row.Sample_ID + ".bam"
+            bam.append(bamname)
+        print(bam)
+    else:
+        print(f' ... ... no bam_suffix provided. Will not add bam file names to [Data] section' )
+    print(f' ... ... ... ok' )
 
 
     # [Data] section
@@ -527,7 +558,7 @@ else:
             raise ValueError('Error: Duplicate sample names detected wihtin a lane - not allowed !!' )
     # not sure if need to include beliw ...
     # elif len(all_projects) >1 :
-    #     print(f' ... ... ... [Data] "Lane" column is specified & samples are from different "Sample_Project"')
+    #     print(f' ... ... ... [Data] "I Lane" column is specified & samples are from different "Sample_Project"')
     #     print(f' ... ... ... "allow_dups_over_lanes" set to {allow_dups_over_lanes}. Duplicate Sample_IDs are allowed but only between lanes.')
     #     sid = df['Sample_ID'].map(str)
     #     seen = set()
