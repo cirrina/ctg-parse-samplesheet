@@ -501,27 +501,6 @@ else:
     print(f' ... ... ... ok' )
 
 
-    print(f' ... ... ... ok' )
-        if "PipelineName" in df.columns and "Sample_TumorNormal" in df.columns:
-            print(' ... ... ... PipelineName and Sample_TumorNormal columns identified ..')
-            bam = []
-            for idx, row in df.iterrows():
-                tumor = row.Sample_TumorNormal
-                pipe = row.PipelineName
-                if pipe == "dna-dragen" and tumor == "tumor":
-                    bamname = row.Sample_ID + "_tumor.bam"
-                    bam.append(bamname)
-                elif pipe == "dna-dragen":
-                    bamname = row.Sample_ID + ".bam"
-                    bam.append(bamname)
-        else:
-            bamname = row.Sample_ID + ".bam"
-            bam.append(bamname)
-        print(bam)
-    else:
-        print(f' ... ... no bam_suffix provided. Will not add bam file names to [Data] section' )
-    print(f' ... ... ... ok' )
-
 
     # [Data] section
     ## Check if any duplicated sample_ids exits.
