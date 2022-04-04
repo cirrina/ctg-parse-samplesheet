@@ -492,8 +492,7 @@ else:
                     bam_suffix_sample = ".bam"
                 else:
                     bam_suffix_sample = bam_suffix
-
-		bam.append(f'{sample_id}{bam_suffix_sample}')
+                bam.append(f'{sample_id}{bam_suffix_sample}')
             df["bam"] = bam
 
     else:
