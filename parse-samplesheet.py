@@ -86,7 +86,8 @@ sectionDict = {
 pipelineDict = {
     'seqonly': ['fastq_demux','rawdata_runfolder'],
     'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','fastq_demux','rawdata_runfolder'],
-    'dna-dna': ['panel_twist_comprehensive_dragen','panel_gmck_dragen','panel_gms_dragen','bam_alignment_dragen','wgs_dragen','demux','rawdata']
+    'dna-dragen': ['panel_twist_comprehensive_dragen','panel_gmck_dragen','panel_gms_dragen','bam_alignment_dragen','wgs_dragen'],
+    'demux-runfolder': ['bcl2fastq_default']
     }
 
 
@@ -782,23 +783,21 @@ else:
                 if not header_pipelineprofile in pipelineDict[header_pipelinename]:
                     raise ValueError(f'[Data] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
 
-        ## currently only write samplesheets for DNA and RNA pipelines
-        if not header_pipelinename in ['ctg-rnaseq','dna-dragen']:
-            continue
-        elif header_pipelineprofile in ['demux']:
+        
+        # if not header_pipelinename in ['ctg-rnaseq','dna-dragen']:
+        #    continue
+        if header_pipelinename in ['demux-runfolder']: ## Do not write project specific sheet if pipeline is demux
             continue
         else:
             if header_pipelinename == 'ctg-rnaseq':
-                project_out = f'CTG_SampleSheet.rnaseq.{project}.csv'
-            elif header_pipelinename == 'dna-dragen':
-                if header_pipelineprofile in ['panel_gmck_dragen','panel_gms_dragen','panel_twist_comprehensive_dragen', 'bam_alignment_dragen','wgs_dragen']:
-                    project_out = f'CTG_SampleSheet.dna-dragen.{project}.csv'
-                else:
-                    project_out = f'CTG_SampleSheet.unknown.{project}.csv'
+                project_out_filename = f'CTG_SampleSheet.rnaseq.{project}.csv'
+            else:
+                project_out_filename = f'CTG_SampleSheet.{header_pipelinename}.{project}.csv'
+
 
         print(f' ... ------------------------------------- ')
-        print(f' ... writing Project specific samplesheet:  {project_out}')
-        fh_out = open(project_out,'w', encoding='utf-8')
+        print(f' ... writing Project specific samplesheet:  {project_out_filename}')
+        fh_out = open(project_out_filename,'w', encoding='utf-8')
         writer = csv.writer(fh_out, lineterminator='\n')
         n_columns = dfs[project].shape[1]
 
@@ -873,7 +872,7 @@ else:
                 datarow[0] = '[Data]'
                 writer.writerow(datarow)
                 fh_out.close()
-                with open(project_out, 'a') as f:
+                with open(project_out_filename, 'a') as f:
                     ## if collapse lanes * only keep unique sample-fastqs mappings in sample sheet
                     ## only relevant if fastq file names are built (fastq_suffix given)
                     dfs_write = dfs[project]
