@@ -550,12 +550,13 @@ else:
 
 
 
-    # [Data] section
+    # [Data] section -- all_projects
     ## Split df into multiple data frames based on Project ID (one df per project)
     ## This to save project-specific/uniqe sample sheets & initiate project specific nextflow pipelines
     # # ==========================================
     dfs = dict(tuple(df.groupby('Sample_Project')))
     all_projects = set(dfs.keys()) # set all_projects list with all project names
+    
 
     ## Curate [Data] all Columns that contain only blank values
     print(f'... ... looping all project-specific [Data] sections. dropping columns with only blank values')
@@ -576,12 +577,15 @@ else:
     # The first row must have columns (commas) mathcing the [Data] section
 
 
+    # =====================================================
     #  Write Sample Sheets
     # =====================================================
 
-
+    # ----------------------------------------------------------
     # 1. One samplesheet with full parsed output
+    # ----------------------------------------------------------
     #   - Name: CTG_SampleSheet.parsed.csv
+
     print(f' ... ------------------------------------- ')
     sheet_out = f'{sheet_name.replace(".csv","")}.parsed.csv'
     #sheet_out = f'CTG_SampleSheet.parsed.csv' # the runfolder is added to samplesheet name. defaults to current dir.
@@ -653,7 +657,9 @@ else:
 
 
 
+    # ----------------------------------------------------------
     # 2. One slimmed samplesheet used for demux with bcl2fastq.
+    # ----------------------------------------------------------
     #   - Name: CTG_SampleSHeet-demux.csv
 
     ## Genreate stripped [data] section for demux. Keep ony columns needed for demux (['Lane','Sample_ID','Sample_Name','Sample_Project',"index..."])
@@ -756,8 +762,10 @@ else:
             with open(sheet_out, 'a') as f:
                  df_demux.to_csv(f, header=True, index=False)
 
-
+    # ----------------------------------------------------------
     #  3. One samplesheet per unique project (rnaseq pipeline).
+    # ----------------------------------------------------------
+    
     #   NOT for demux - used for Nextflow - if multiple Lanes (and --noLaneSplitting) Needs one row per Sample fastq
     #   - Name: samplesheet-ctg-YYYY.csv
     #   - When writing these individual samplesheets update metadata (may have gone from 'multiple' to unique)
@@ -769,35 +777,14 @@ else:
 
     for project in all_projects:
 
-        ## First scan each [Header] for project and determine what PipelineName and PipelineProfile
-        ## Let the pipelinenames and profiles determine if to save to file and what project specific samplesheet name
-        for row in sectionDict['[Header]']:
-            if current_row[0] == 'PipelineName':
-                header_pipelinename = current_row[1]
-                print(f' ... ... ... PipelineName: {header_pipelinename}')
-                if not header_pipelinename in pipelineDict.keys():
-                    raise ValueError(f'[Data] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
-            if current_row[0] == 'PipelineProfile':
-                header_pipelineprofile = current_row[1]
-                print(f' ... ... ... PipelineProfile: {header_pipelineprofile}')
-                if not header_pipelineprofile in pipelineDict[header_pipelinename]:
-                    raise ValueError(f'[Data] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
-
-        
-        # if not header_pipelinename in ['ctg-rnaseq','dna-dragen']:
-        #    continue
-        if header_pipelinename in ['demux-runfolder']: ## Do not write project specific sheet if pipeline is demux
-            continue
-        else:
-            if header_pipelinename == 'ctg-rnaseq':
-                project_out_filename = f'CTG_SampleSheet.rnaseq.{project}.csv'
-            else:
-                project_out_filename = f'CTG_SampleSheet.{header_pipelinename}.{project}.csv'
-
+        # one problem is that the individuel pipeline for each project is to be used in the filename.
+        # this pipeline is not yet defined. 
+        # threfore write to tmp file, extract the pipeline name during write process. then move the file to a new file name
+        project_tmp_filename = f'CTG_SampleSheet.temp.{project}.csv' ## first create a temp file. when the sheet is created, copy (o)
 
         print(f' ... ------------------------------------- ')
-        print(f' ... writing Project specific samplesheet:  {project_out_filename}')
-        fh_out = open(project_out_filename,'w', encoding='utf-8')
+        print(f' ... writing Project specific samplesheet:  {project_tmp_filename}')
+        fh_out = open(project_tmp_filename,'w', encoding='utf-8')
         writer = csv.writer(fh_out, lineterminator='\n')
         n_columns = dfs[project].shape[1]
 
@@ -830,17 +817,12 @@ else:
                     if current_row[0] in params_dict.keys():
                         current_row = harmonize_header_params(input_row=current_row, data_mat=dfs[project], data_col=params_dict[current_row[0]]['DataCol'], allowMultiple=params_dict[current_row[0]]['Catenate'])
 
-                    # check Pipeline & Profile (stop if non-allowed PipelineName or PipelineProfile)
-                    # if current_row[0] == 'PipelineName':
-                    #     header_pipelinename = current_row[1]
-                    #     print(f' ... ... ... PipelineName: {header_pipelinename}')
-                    #     if not header_pipelinename in pipelineDict.keys():
-                    #         raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
-                    # if current_row[0] == 'PipelineProfile':
-                    #     header_pipelineprofile = current_row[1]
-                    #     print(f' ... ... ... PipelineProfile: {header_pipelineprofile}')
-                    #     if not header_pipelineprofile in pipelineDict[header_pipelinename]:
-                    #         raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
+                    # fetch PipelineName and save for later (to filename)
+                    if current_row[0] == 'PipelineName':
+                        header_pipelinename = current_row[1]
+                        print(f' ... ... ... PipelineName: {header_pipelinename}')
+
+                    
                     ## Write row to file
                     if not all(elem == '' for elem in current_row):
                         writer.writerow(current_row)
@@ -872,7 +854,7 @@ else:
                 datarow[0] = '[Data]'
                 writer.writerow(datarow)
                 fh_out.close()
-                with open(project_out_filename, 'a') as f:
+                with open(project_tmp_filename, 'a') as f:
                     ## if collapse lanes * only keep unique sample-fastqs mappings in sample sheet
                     ## only relevant if fastq file names are built (fastq_suffix given)
                     dfs_write = dfs[project]
@@ -885,6 +867,13 @@ else:
     # close files
     f.close()
     csvfile.close()
+    # generate the actual file name 
+    if header_pipelinename == 'ctg-rnaseq':
+        project_final_filename = f'CTG_SampleSheet.rnaseq.{project}.csv'
+    else:
+        project_final_filename = f'CTG_SampleSheet.{header_pipelinename}.{project}.csv'
+
+    os.rename(project_tmp_filename, project_final_filename)
     #fh_out.close()
 ## end else (if not) is rawdata delivery
 
