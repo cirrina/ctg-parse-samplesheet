@@ -635,12 +635,13 @@ else:
                         sectionDict[s][row][1] = 'false'
                 if row == 'NumberSamples':
                     mykeys=sectionDict['[Header]'].keys()
-                    n_samples = df.shape[0]
-                    s_samples = sectionDict[s][row][1]
-                    if not n_samples == sectionDict[s][row][1]:
+                    n_samples = int(df.shape[0])
+                    s_samples = int(sectionDict[s][row][1])
+                    if not n_samples == s_samples:
                         print(f' ... ... Warning: Number of Sample_IDs ({n_samples}) do not match supplied "NumberSamples" ({s_samples})')
                     sectionDict[s][row][1] = n_samples
                     print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
+
 
                 if not all(elem == '' for elem in sectionDict[s][row]):
                     current_row = ['']*n_columns
@@ -742,9 +743,9 @@ else:
                         sectionDict[s][row][1] = 'false'
                 if row == 'NumberSamples':
                     mykeys=sectionDict['[Header]'].keys()
-                    n_samples = df.shape[0]
-                    s_samples = sectionDict[s][row][1]
-                    if not n_samples == sectionDict[s][row][1]:
+                    n_samples = int(df.shape[0])
+                    s_samples = int(sectionDict[s][row][1])
+                    if not n_samples == s_samples:
                         print(f' ... ... Warning: Number of Sample_IDs ({n_samples}) do not match supplied "NumberSamples" ({s_samples})')
                     sectionDict[s][row][1] = n_samples
                     print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
