@@ -95,7 +95,19 @@ if [ ! -f ${samplesheet} ]; then
   exit 1
 fi
 
-sheetID=$(echo $samplesheet | sed "s/CTG_SampleSheet.//g" | sed "s/.csv//g")
+sheetID=$(echo ${samplesheet} | sed "s/CTG_SampleSheet.//g" | sed "s/.csv//g")
+
+
+## Check if Project ID is supplied. Required !!!
+## store runFolder param
+projectid=$(awk -F, '$1 == "ProjectID"' ${samplesheet} | awk -F, '{print $2}')
+if [[ ${projectid} ==  "" ]]; then
+  echo " Warning: 'ProjectID' is not properly supplied in samplesheet [Header], e.g. 'ProjectID,2022_013'. If multiple projects, specify as 'ProjectID,multiple' ";
+  exit 1
+fi
+
+
+
 
 ### Exec python script
 scriptdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )

@@ -85,7 +85,7 @@ sectionDict = {
 ## Pipeline dict. check allowed Pipeline & pipeline profiles
 pipelineDict = {
     'seqonly': ['fastq_demux','rawdata_runfolder'],
-    'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','fastq_demux','rawdata_runfolder'],
+    'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','fastq_demux','rawdata_runfolder','rawdata'],
     'dna-dragen': ['panel_twist_comprehensive_dragen','panel_gmck_dragen','panel_gms_dragen','bam_alignment_dragen','wgs_dragen'],
     'demux-runfolder': ['bcl2fastq_default']
     }
@@ -290,7 +290,7 @@ print(f' ... ... ok')
 ##  --- IF ---  SEQONLY -- RAWDATA  --
 ##  write CTG_SampleSheet.rawdata.cfg and exit
 # =========================================================================
-if header_pipelinename=='seqonly' and header_pipelineprofile=='rawdata_runfolder':
+if header_pipelinename=='seqonly' and header_pipelineprofile in ['rawdata_runfolder','rawdata']:
     print(f' ... Pipeline is SeqOnly and rawdata_runfolder delivery. ')
 
     ## extract the important
@@ -338,26 +338,11 @@ else:
         ## email customer
         ## email ctg
         ## AutoDeliver
-        ## Project_ID
+        ## ProjectID
 
-        # print(row)
-        if row == 'PairedReads':
-            print(f' ... ... found [Header] param "PairedReads": checking ...')
-            header_paired = sectionDict['[Header]'][row][1]
-            if not header_paired in ['true','false']:
-                print(f' ... ... ... {row[1]}')
-                raise ValueError('[Header] param "PairedReads" incorrectly specified. Set to "true" or "false"' )
-            print(f' ... ... ... ok')
-        if row == 'Strandness':
-            print(f' ... ... found [Header] param "Strandness": checking ...')
-            header_strandness = sectionDict['[Header]'][row][1]
-            #if not header_strandness in ['forward','reverse']:
-            #    raise ValueError('[Header] param "Strandness" incorrectly specified. Set to "forward" or "reverse"' )
-            print(f' ... ... ... ok')
-        # For Illumina RunFolder:
-        # If not defined, RunFolder to Execution dir.
         if row == 'RunFolder':
             # print(f' ... ... found[Header] param "RunFolder"')
+            # header_runfolder = sectionDict['[Header]'][row][1]
             header_runfolder = sectionDict['[Header]'][row][1]
             if not header_runfolder:
                 print(f' ... ... RunFolder not specified ...')
@@ -367,6 +352,32 @@ else:
                     print(f' ... ... ... Found "RTAComplete.txt" - Current dir is a RunFolder. Setting "RunFolder" to current dir: "{cwd}"')
                 else:
                     print(f' ... ... ... "RTAComplete.txt" not in current dir. Leave RunFolder unspecified.')
+        
+        if row == 'ProjectID':
+            header_projectid = sectionDict['[Header]'][row][1]
+            if header_projectid:
+                print(f' ... ... found[Header] param  ProjectID:  {header_projectid}')
+            else:
+                print(f' ... ... ProjectID not specified ...')
+                raise ValueError(' ... ... ProjectID must be specified in the [Header] section ...' )
+
+        # PairedReads true/false is required! (used when building  )
+        if row == 'PairedReads':
+            print(f' ... ... found [Header] param "PairedReads":  {sectionDict['[Header]'][row][1]}')
+            # header_paired = sectionDict['[Header]'][row][1]
+            # if not header_paired in ['true','false']:
+            #     print(f' ... ... ... {row[1]}')
+            #     raise ValueError('[Header] param "PairedReads" incorrectly specified. Set to "true" or "false"' )
+            print(f' ... ... ... ok')
+        
+        # if row == 'Strandness':
+        #     print(f' ... ... found [Header] param "Strandness": checking ...')
+        #     header_strandness = sectionDict['[Header]'][row][1]
+        #     #if not header_strandness in ['forward','reverse']:
+        #     #    raise ValueError('[Header] param "Strandness" incorrectly specified. Set to "forward" or "reverse"' )
+        #     print(f' ... ... ... ok')
+        # For Illumina RunFolder:
+        # If not defined, RunFolder to Execution dir.
 
     print(f' ... ok')
 
@@ -392,6 +403,7 @@ else:
     if force_Sample_Name:
         print(f' ... ... forcing "Sample_Name" column to same as "Sample_ID"')
         df["Sample_Name"] = df["Sample_ID"]
+
 
 
     ## Check & replace illegal characters using params dict
@@ -501,7 +513,18 @@ else:
         print(f' ... ... no bam_suffix provided. Will not add bam file names to [Data] section' )
     print(f' ... ... ... ok' )
 
-
+    # [Data] section -- Check Sample_Project column
+    if 'Sample_Project' not in df.columns:
+        print(f' ... ... Warning:  Sample_Project colum not found in [Data]' )
+        print(f' ... ... ... Forcing all Samples in [Data] Sample_Project to ProjectID from header :  {header_projectid}' )
+        df['Sample_Project']=header_projectid
+    elif len(df['Sample_Project'].unique())==1:
+        if not df['Sample_Project'].unique():
+            print(f' ... ... Warning:  Sample_Project colum contains only blank values' )
+            print(f' ... ... ... Forcing all Samples in [Data] Sample_Project to ProjectID from header :  {header_projectid}' )
+            df['Sample_Project']=header_projectid
+    
+    
 
     # [Data] section
     ## Check if any duplicated sample_ids exits.
@@ -550,13 +573,13 @@ else:
 
 
 
-    # [Data] section -- all_projects
+    # [Data] section -- individual Projects
     ## Split df into multiple data frames based on Project ID (one df per project)
     ## This to save project-specific/uniqe sample sheets & initiate project specific nextflow pipelines
     # # ==========================================
     dfs = dict(tuple(df.groupby('Sample_Project')))
     all_projects = set(dfs.keys()) # set all_projects list with all project names
-    
+   
 
     ## Curate [Data] all Columns that contain only blank values
     print(f'... ... looping all project-specific [Data] sections. dropping columns with only blank values')
