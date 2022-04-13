@@ -290,8 +290,9 @@ print(f' ... ... ok')
 ##  --- IF ---  SEQONLY -- RAWDATA  --
 ##  write CTG_SampleSheet.rawdata.cfg and exit
 # =========================================================================
-if header_pipelinename=='seqonly' and header_pipelineprofile in ['rawdata_runfolder','rawdata']:
-    print(f' ... Pipeline is SeqOnly and rawdata_runfolder delivery. ')
+# if header_pipelinename=='seqonly' and header_pipelineprofile in ['rawdata_runfolder','rawdata']:
+if header_pipelineprofile in ['rawdata_runfolder','rawdata']:
+    print(f' ... Pipeline profile is set to rawdata delivery. ')
 
     ## extract the important
     sheet_out = f'CTG_SampleSheet.rawdata.csv' # the runfolder is added to samplesheet name. defaults to current dir.
@@ -398,6 +399,11 @@ else:
     df = df.transpose() # transpose from dict
     df.rename(columns=df.iloc[0], inplace=True) # first [Data] row is headers
     df = df.iloc[1: , :]
+
+    ## if no [data] rows - warn and exit (data rows for demux is expected for all sheets except rawdata)
+    if df.shape[0] == 0:
+        raise ValueError(f'Error: No [Data] rows are found in sheet. Demux cannot be performed. Only rawdata pipelineProfiles accept empty [Data] sections' )
+
 
     # Force Sanmple_Name to Sample_ID (if option `force_Sample_Name`)
     if force_Sample_Name:
