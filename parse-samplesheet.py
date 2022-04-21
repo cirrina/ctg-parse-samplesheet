@@ -502,16 +502,19 @@ else:
         else:
             bam = []
             for idx, row in df.iterrows():
-                tumor = row.Sample_TumorNormal
+                sample_id = row.Sample_ID
                 pipe = row.PipelineName
-                if pipe == "dna-dragen" and tumor == "tumor":
-                    print(f' ... ... ... PipelineName is {pipe} and Sample_TumorNormal is {tumor}. Forcing bam_suffix to _tumor.bam')
-                    bam_suffix_sample = "_tumor.bam"
-                elif pipe == "dna-dragen":
-                    print(f' ... ... ... PipelineName is {pipe}. Forcing bam_suffix to .bam')
-                    bam_suffix_sample = ".bam"
+                if pipe == "dna-dragen":
+                    tumor = row.Sample_TumorNormal
+                    if tumor == "tumor":
+                        print(f' ... ... ... PipelineName is {pipe} and Sample_TumorNormal is {tumor}. Forcing bam_suffix to _tumor.bam')
+                        bam_suffix_sample = "_tumor.bam"
+                    else:
+                        print(f' ... ... ... PipelineName is {pipe}. Forcing bam_suffix to .bam')
+                        bam_suffix_sample = ".bam"
                 else:
                     bam_suffix_sample = bam_suffix
+
                 bam.append(f'{sample_id}{bam_suffix_sample}')
             df["bam"] = bam
 
@@ -892,18 +895,19 @@ else:
                         # dfs_write.drop('Lane', axis=1, inplace=True) # lane is no longer relevant -
                         dfs_write.drop_duplicates(subset=['Sample_ID'], inplace=True) ## collapse - drop rows with duplicated fastq files
                     dfs[project].to_csv(f, header=True, index=False)
+        # generate the actual file name 
+        if header_pipelinename == 'ctg-rnaseq':
+            project_final_filename = f'CTG_SampleSheet.rnaseq.{project}.csv'
+        else:
+            project_final_filename = f'CTG_SampleSheet.{header_pipelinename}.{project}.csv'
+        print(f' ... changing filename to:  {project_final_filename}')
+        os.rename(project_tmp_filename, project_final_filename)
         print(f' ... ------------------------------------- ')
     print(' ... ok ... ')
     # close files
     f.close()
     csvfile.close()
-    # generate the actual file name 
-    if header_pipelinename == 'ctg-rnaseq':
-        project_final_filename = f'CTG_SampleSheet.rnaseq.{project}.csv'
-    else:
-        project_final_filename = f'CTG_SampleSheet.{header_pipelinename}.{project}.csv'
-
-    os.rename(project_tmp_filename, project_final_filename)
+    
     #fh_out.close()
 ## end else (if not) is rawdata delivery
 
