@@ -364,8 +364,8 @@ else:
 
         # PairedReads true/false is required! (used when building  )
         if row == 'PairedReads':
-            print(f' ... ... found [Header] param "PairedReads":  {sectionDict['[Header]'][row][1]}')
-            # header_paired = sectionDict['[Header]'][row][1]
+            print(f' ... ... found [Header] param "PairedReads":  {sectionDict["[Header]"][row][1]}')
+            header_paired = sectionDict['[Header]'][row][1]
             # if not header_paired in ['true','false']:
             #     print(f' ... ... ... {row[1]}')
             #     raise ValueError('[Header] param "PairedReads" incorrectly specified. Set to "true" or "false"' )
