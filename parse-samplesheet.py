@@ -664,11 +664,12 @@ else:
                     sectionDict[s][row][1] = n_samples
                     print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
 
-                if not all(elem == '' for elem in sectionDict[s][row]):
+                if not all(elem == '' for elem in sectionDict[s][row]) or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value
                     current_row = ['']*n_columns
                     current_row[0] = sectionDict[s][row][0]
                     current_row[1] = sectionDict[s][row][1]
                     writer.writerow(current_row)
+
         if s == '[Reads]':
             writer.writerow(['']*n_columns)
             readsrow = ['']*n_columns
@@ -772,7 +773,7 @@ else:
                     sectionDict[s][row][1] = n_samples
                     print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
 
-                if not all(elem == '' for elem in sectionDict[s][row]):
+                if not all(elem == '' for elem in sectionDict[s][row]) or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value
                     current_row = ['']*n_columns
                     current_row[0] = sectionDict[s][row][0]
                     current_row[1] = sectionDict[s][row][1]
@@ -871,8 +872,9 @@ else:
 
                     
                     ## Write row to file
-                    if not all(elem == '' for elem in current_row):
+                    if not all(elem == '' for elem in current_row) or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value
                         writer.writerow(current_row)
+
             if s == '[Reads]':
                 writer.writerow(['']*n_columns)
                 readsrow = ['']*n_columns
