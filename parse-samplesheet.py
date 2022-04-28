@@ -84,7 +84,7 @@ sectionDict = {
 
 ## Pipeline dict. check allowed Pipeline & pipeline profiles
 pipelineDict = {
-    'seqonly': ['fastq_demux','rawdata_runfolder'],
+    'seqonly': ['bcl2fastq_default','fastq_demux','rawdata_runfolder'],
     'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','fastq_demux','rawdata_runfolder','rawdata'],
     'dna-dragen': ['panel_twist_comprehensive_dragen','panel_gmck_dragen','panel_gms_dragen','bam_alignment_dragen','wgs_dragen'],
     'demux-runfolder': ['bcl2fastq_default']
@@ -117,7 +117,7 @@ params_dict = {
     'Strandness': {'DataCol': 'Sample_Strandness','Catenate': False,'RegExp': '','Controlled': True},
     'FragmentationTime': {'DataCol': 'fragmentation_time','Catenate': False,'RegExp': '','Controlled': True},
     'PCR-cycles': {'DataCol': 'pcr_cycles','Catenate': False,'RegExp': '','Controlled': True},
-    'PairedReads': {'DataCol': 'Sample_PairedReads','Catenate': False,'RegExp': '','Controlled': True},
+    'PairedEnd': {'DataCol': 'Sample_PairedEnd','Catenate': False,'RegExp': '','Controlled': True},
     'PoolConcNovaSeq': {'DataCol': 'Pool_Conc_NovaSeq','Catenate': False,'RegExp': '','Controlled': True},
     'PoolMolarityNovaSeq': {'DataCol': 'Pool_Molarity_NovaSeq','Catenate': False,'RegExp': '','Controlled': True}}
 
@@ -362,13 +362,13 @@ else:
                 print(f' ... ... ProjectID not specified ...')
                 raise ValueError(' ... ... ProjectID must be specified in the [Header] section ...' )
 
-        # PairedReads true/false is required! (used when building  )
-        if row == 'PairedReads':
-            print(f' ... ... found [Header] param "PairedReads":  {sectionDict["[Header]"][row][1]}')
+        # PairedEnd true/false is required! (used when building  )
+        if row == 'PairedEnd':
+            print(f' ... ... found [Header] param "PairedEnd":  {sectionDict["[Header]"][row][1]}')
             header_paired = sectionDict['[Header]'][row][1]
             # if not header_paired in ['true','false']:
             #     print(f' ... ... ... {row[1]}')
-            #     raise ValueError('[Header] param "PairedReads" incorrectly specified. Set to "true" or "false"' )
+            #     raise ValueError('[Header] param "PairedEnd" incorrectly specified. Set to "true" or "false"' )
             print(f' ... ... ... ok')
         
         # if row == 'Strandness':
@@ -451,6 +451,24 @@ else:
             print(f' ... ... ... ... replacing these with blanks')
             df[col] = df[col].replace(regular_expression, '', regex=True)
 
+    # [Data] section -- Check required Columns. force to identical values if missing
+    if 'Sample_Project' not in df.columns:
+        print(f' ... ... Warning:  Sample_Project colum not found in [Data]' )
+        print(f' ... ... ... Forcing all Samples in [Data] Sample_Project to ProjectID from header :  {header_projectid}' )
+        df['Sample_Project']=header_projectid
+    elif len(df['Sample_Project'].unique())==1:
+        if not df['Sample_Project'].unique():
+            print(f' ... ... Warning:  Sample_Project colum contains only blank values' )
+            print(f' ... ... ... Forcing all Samples in [Data] Sample_Project to ProjectID from header :  {header_projectid}' )
+            df['Sample_Project']=header_projectid
+    if 'PipelineName' not in df.columns:
+        print(f' ... ... Warning:  PipelineName colum not found in [Data]' )
+        print(f' ... ... ... Forcing all Samples in [Data] PipelineName to PipelineName from header :  {header_pipelinename}' )
+        df['PipelineName']=header_pipelinename
+    if 'PipelinProfile' not in df.columns:
+        print(f' ... ... Warning:  PipelinProfile colum not found in [Data]' )
+        print(f' ... ... ... Forcing all Samples in [Data] PipelinProfile to PipelinProfile from header :  {header_pipelineprofile}' )
+        df['PipelinProfile']=header_pipelineprofile
 
 
     # [Data] section
@@ -459,13 +477,13 @@ else:
     # blc2fastq filename logic:
     #  **{samplename}\_{S1}\_{L001}\_{R1}\_001.fastq.gz**
     #  Using the 'noLaneSplitting' flag, L001 will NOT be in fastq name
-    # Requres that the global 'PairedReads' parameter is defined in [Header] section
+    # Requres that the global 'PairedEnd' parameter is defined in [Header] section
 
     if fastq_suffix: # First check if fastq suffix is provided
         print(f' ... ... Fastq suffix provided ("{fastq_suffix}"). Adding fastq file names to [Data] section' )
-        ## header PairedReads defined above from [Header]-Paried para (true/false). If not raise error
-        if not header_paired:
-            raise ValueError(' ... ... ... Error: "PairedReads" (true or false) must be defined in [Header] section when adding fastq files!' )
+        ## header PairedEnd defined above from [Header]-Paried para (true/false). If not raise error
+        if not header_paired or header_paired=='':
+            raise ValueError(' ... ... ... Error: "PairedEnd" (true or false) must be defined in [Header] section when adding fastq file names!' )
         ## If fastq datacolumns present then requre
         datacols = df.keys().tolist()
         if not force_fastq_names and any([dc in ['fastq_1','fastq_2'] for dc in datacols]):
@@ -504,7 +522,7 @@ else:
             for idx, row in df.iterrows():
                 sample_id = row.Sample_ID
                 pipe = row.PipelineName
-                if pipe == "dna-dragen":
+                if pipe == "dna-dragen": ## dragen pipeline naming of bam uses tumor/normalgit
                     tumor = row.Sample_TumorNormal
                     if tumor == "tumor":
                         print(f' ... ... ... PipelineName is {pipe} and Sample_TumorNormal is {tumor}. Forcing bam_suffix to _tumor.bam')
@@ -522,16 +540,7 @@ else:
         print(f' ... ... no bam_suffix provided. Will not add bam file names to [Data] section' )
     print(f' ... ... ... ok' )
 
-    # [Data] section -- Check Sample_Project column
-    if 'Sample_Project' not in df.columns:
-        print(f' ... ... Warning:  Sample_Project colum not found in [Data]' )
-        print(f' ... ... ... Forcing all Samples in [Data] Sample_Project to ProjectID from header :  {header_projectid}' )
-        df['Sample_Project']=header_projectid
-    elif len(df['Sample_Project'].unique())==1:
-        if not df['Sample_Project'].unique():
-            print(f' ... ... Warning:  Sample_Project colum contains only blank values' )
-            print(f' ... ... ... Forcing all Samples in [Data] Sample_Project to ProjectID from header :  {header_projectid}' )
-            df['Sample_Project']=header_projectid
+    
     
     
 
@@ -645,12 +654,15 @@ else:
                 if row == 'NumberSamples':
                     mykeys=sectionDict['[Header]'].keys()
                     n_samples = int(df.shape[0])
-                    s_samples = int(sectionDict[s][row][1])
+                    if sectionDict[s][row][1]=='':
+                        s_samples = n_samples
+                        print(f' ... ... Warning: Number of samples (NumberSamples) not suppleied. forcing to n rows of [Data] section ({n_samples})')
+                    else:
+                        s_samples=int(sectionDict[s][row][1])
                     if not n_samples == s_samples:
                         print(f' ... ... Warning: Number of Sample_IDs ({n_samples}) do not match supplied "NumberSamples" ({s_samples})')
                     sectionDict[s][row][1] = n_samples
                     print(f' ... ... ... setting "NumberSamples" to: {n_samples}')
-
 
                 if not all(elem == '' for elem in sectionDict[s][row]):
                     current_row = ['']*n_columns
@@ -672,9 +684,10 @@ else:
             writer.writerow(['']*n_columns)
             settingsrow = ['']*n_columns
             settingsrow[0] = '[Settings]'
-            writer.writerow(settingsrow)
-            for row in sectionDict[s]:
-                if not all(elem == '' for elem in sectionDict[s][row]):
+            writer.writerow(settingsrow) ## writes the first row, i.e. [Settings],,, (with n_columns number of commas)
+            for row in sectionDict[s]: ## step through all entries
+                if not all(elem == '' for elem in sectionDict[s][row]): ## do not write blank rows will only commas
+                    if sectionDict[s][row][0] in ['Read1StartFromCycle','Read2StartFromCycle'] and sectionDict[s][row][1]=='': continue # Do not write Read1StartFromCycle if blank
                     current_row = ['']*n_columns
                     current_row[0] = sectionDict[s][row][0]
                     current_row[1] = sectionDict[s][row][1]
@@ -782,6 +795,7 @@ else:
             writer.writerow(settingsrow)
             for row in sectionDict[s]:
                 if not all(elem == '' for elem in sectionDict[s][row]):
+                    if sectionDict[s][row][0] in ['Read1StartFromCycle','Read2StartFromCycle'] and sectionDict[s][row][1]=='': continue # Do not write Read1StartFromCycle if blank
                     current_row = ['']*n_columns
                     current_row[0] = sectionDict[s][row][0]
                     current_row[1] = sectionDict[s][row][1]
@@ -877,6 +891,7 @@ else:
                 writer.writerow(settingsrow)
                 for row in sectionDict[s]:
                     if not all(elem == '' for elem in sectionDict[s][row]):
+                        if sectionDict[s][row][0] in ['Read1StartFromCycle','Read2StartFromCycle'] and sectionDict[s][row][1]=='': continue # Do not write Read1StartFromCycle if blank
                         current_row = ['']*n_columns
                         current_row[0] = sectionDict[s][row][0]
                         current_row[1] = sectionDict[s][row][1]
