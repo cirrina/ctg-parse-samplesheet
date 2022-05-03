@@ -51,7 +51,7 @@ def get_param(param_name=None, myDict=None):
 batchid_sheetname=sheet_name.split(".")[2]
 
 ## -------------------------------
-##  Params temp debug local
+##  Params uncomment when debug on local
 ## -------------------------------
 # os.chdir('/Users/david/training/nbis-python/') ## use if local
 # sheet_name = 'CTG_SampleSheet.2022_003_004_019.csv' ## use if local
@@ -301,8 +301,9 @@ if header_pipelineprofile in ['rawdata_runfolder','rawdata']:
     writer = csv.writer(fh_out, lineterminator='\n')
     print(f' ... writing rawdata samplesheet:  {sheet_out}')
 
-    ## Write customer email (email)
-    my_param = get_param(param_name='email-customer', myDict=sectionDict['[Header]'])
+    ## Write customer email (email). For now autodelivery should only be sent inhouse (ctg). Set same as email-autodelivery, that often is same as email-ctg-bnf person
+    #my_param = get_param(param_name='email-customer', myDict=sectionDict['[Header]'])
+    my_param = get_param(param_name='email-autodelivery', myDict=sectionDict['[Header]'])
     writer.writerow(['email',my_param])
 
     ## Write ProjectID (projid)
@@ -316,7 +317,7 @@ if header_pipelineprofile in ['rawdata_runfolder','rawdata']:
     ## Write AutoDelivery (always FALSE)
     #my_param = get_param(param_name='email-customer', myDict=sectionDict['[Header]'])
     #if not my_param or not my_param=='true':
-    writer.writerow(['autodeliver','n'])
+    writer.writerow(['autodeliver','y'])
     #else:
     #    writer.writerow(['autodeliver','y'])
 
@@ -618,6 +619,9 @@ else:
     # The first row must have columns (commas) mathcing the [Data] section
 
 
+
+
+
     # =====================================================
     #  Write Sample Sheets
     # =====================================================
@@ -686,7 +690,7 @@ else:
             settingsrow = ['']*n_columns
             settingsrow[0] = '[Settings]'
             writer.writerow(settingsrow) ## writes the first row, i.e. [Settings],,, (with n_columns number of commas)
-            for row in sectionDict[s]: ## step through all entries
+            for row in sectionDict[s] or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value ## step through all entries
                 if not all(elem == '' for elem in sectionDict[s][row]): ## do not write blank rows will only commas
                     if sectionDict[s][row][0] in ['Read1StartFromCycle','Read2StartFromCycle'] and sectionDict[s][row][1]=='': continue # Do not write Read1StartFromCycle if blank
                     current_row = ['']*n_columns
@@ -795,7 +799,7 @@ else:
             settingsrow[0] = '[Settings]'
             writer.writerow(settingsrow)
             for row in sectionDict[s]:
-                if not all(elem == '' for elem in sectionDict[s][row]):
+                if not all(elem == '' for elem in sectionDict[s][row]) or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value
                     if sectionDict[s][row][0] in ['Read1StartFromCycle','Read2StartFromCycle'] and sectionDict[s][row][1]=='': continue # Do not write Read1StartFromCycle if blank
                     current_row = ['']*n_columns
                     current_row[0] = sectionDict[s][row][0]
@@ -869,7 +873,6 @@ else:
                     if current_row[0] == 'PipelineName':
                         header_pipelinename = current_row[1]
                         print(f' ... ... ... PipelineName: {header_pipelinename}')
-
                     
                     ## Write row to file
                     if not all(elem == '' for elem in current_row) or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value
@@ -892,7 +895,7 @@ else:
                 settingsrow[0] = '[Settings]'
                 writer.writerow(settingsrow)
                 for row in sectionDict[s]:
-                    if not all(elem == '' for elem in sectionDict[s][row]):
+                    if not all(elem == '' for elem in sectionDict[s][row] or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value
                         if sectionDict[s][row][0] in ['Read1StartFromCycle','Read2StartFromCycle'] and sectionDict[s][row][1]=='': continue # Do not write Read1StartFromCycle if blank
                         current_row = ['']*n_columns
                         current_row[0] = sectionDict[s][row][0]
