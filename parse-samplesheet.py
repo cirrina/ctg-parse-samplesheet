@@ -303,7 +303,7 @@ if header_pipelineprofile in ['rawdata_runfolder','rawdata']:
 
     ## Write customer email (email). For now autodelivery should only be sent inhouse (ctg). Set same as email-autodelivery, that often is same as email-ctg-bnf person
     #my_param = get_param(param_name='email-customer', myDict=sectionDict['[Header]'])
-    my_param = get_param(param_name='email-autodelivery', myDict=sectionDict['[Header]'])
+    my_param = get_param(param_name='email-autodeliver', myDict=sectionDict['[Header]'])
     writer.writerow(['email',my_param])
 
     ## Write ProjectID (projid)
