@@ -301,25 +301,27 @@ if header_pipelineprofile in ['rawdata_runfolder','rawdata']:
     writer = csv.writer(fh_out, lineterminator='\n')
     print(f' ... writing rawdata samplesheet:  {sheet_out}')
 
-    ## Write customer email (email). For now autodelivery should only be sent inhouse (ctg). Set same as email-autodelivery, that often is same as email-ctg-bnf person
-    #my_param = get_param(param_name='email-customer', myDict=sectionDict['[Header]'])
+    
     my_param = get_param(param_name='email-autodeliver', myDict=sectionDict['[Header]'])
-    writer.writerow(['email',my_param])
+    if not my_param: my_param = get_param(param_name='email-ctg-bnf', myDict=sectionDict['[Header]'])
+    writer.writerow(['email-autodeliver',my_param])
 
     ## Write ProjectID (projid)
     my_param = get_param(param_name='ProjectID', myDict=sectionDict['[Header]'])
-    writer.writerow(['projid',my_param])
+    writer.writerow(['ProjectID',my_param])
 
-    ## Write email-ctg (cc)
-    my_param = get_param(param_name='email-ctg-all', myDict=sectionDict['[Header]'])
-    writer.writerow(['cc',my_param])
+    ## Write email-ctg (cc), i.e. additional email users at CTG, such as lab responsible person
+    my_param = get_param(param_name='email-ctg-lab', myDict=sectionDict['[Header]'])
+    writer.writerow(['email-cc',my_param])
 
-    ## Write AutoDelivery (always FALSE)
-    #my_param = get_param(param_name='email-customer', myDict=sectionDict['[Header]'])
-    #if not my_param or not my_param=='true':
+    ## Write autodeliver - always 'y' for rawdata
     writer.writerow(['autodeliver','y'])
-    #else:
-    #    writer.writerow(['autodeliver','y'])
+
+    ## Write Pipeline name and Profile
+    my_param = get_param(param_name='PipelineName', myDict=sectionDict['[Header]'])
+    writer.writerow(['PipelineName',my_param])
+    my_param = get_param(param_name='PipelineProfile', myDict=sectionDict['[Header]'])
+    writer.writerow(['PipelineProfile',my_param])
 
     fh_out.close()
     print(f' ... ... ok')
@@ -875,7 +877,7 @@ else:
                         print(f' ... ... ... PipelineName: {header_pipelinename}')
                     
                     ## Write row to file
-                    if not all(elem == '' for elem in current_row) or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value
+                    if not all(elem == '' for elem in current_row or sectionDict[s][row][1]==''): ## skip write to file if row is all blanks OR if param has blank value
                         writer.writerow(current_row)
 
             if s == '[Reads]':
@@ -895,7 +897,7 @@ else:
                 settingsrow[0] = '[Settings]'
                 writer.writerow(settingsrow)
                 for row in sectionDict[s]:
-                    if not all(elem == '' for elem in sectionDict[s][row] or sectionDict[s][row][1]=='': ## skip write to file if row is all blanks OR if param has blank value
+                    if not all(elem == '' for elem in sectionDict[s][row] or sectionDict[s][row][1]==''): ## skip write to file if row is all blanks OR if param has blank value
                         if sectionDict[s][row][0] in ['Read1StartFromCycle','Read2StartFromCycle'] and sectionDict[s][row][1]=='': continue # Do not write Read1StartFromCycle if blank
                         current_row = ['']*n_columns
                         current_row[0] = sectionDict[s][row][0]
