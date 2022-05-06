@@ -291,7 +291,7 @@ print(f' ... ... ok')
 ##  write CTG_SampleSheet.rawdata.cfg and exit
 # =========================================================================
 # Adapted to Old and Newer pipeline nomenclature. Nowadays rawdata_only should be specified as PipelineName for rawdata delivery
-if header_pipelineprofile in ['rawdata_only','rawdata','rawdata_runfolder'] or header_pipelineprofile in ['rawdata_runfolder','rawdata']:
+if header_pipelinename in ['rawdata_only','rawdata','rawdata_runfolder'] or header_pipelineprofile in ['rawdata_runfolder','rawdata']:
     print(f' ... Pipeline profile is set to rawdata delivery. ')
     print(f' ... PipelineProfile:  ${header_pipelineprofile}. ')
 

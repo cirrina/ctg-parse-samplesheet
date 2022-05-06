@@ -114,7 +114,7 @@ scriptdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # python --version
 echo " ... ... samplesheet is: ${samplesheet}"
 echo " ... running python script: parse-sampelsheet.py"
-echo " ... check python script logfile: parse-samplesheet.log"
+echo " ... check python script logfile: ctg.log.parse-samplesheet"
 #python ${scriptdir}/parse-samplesheet.py --samplesheet ${samplesheet} \ ## set if run local
 singularity exec --bind /projects/fs1/ ${singularity_contatiner} python ${scriptdir}/parse-samplesheet.py --samplesheet ${samplesheet} \
   --forcesamplename ${forcesamplename} \
@@ -123,7 +123,7 @@ singularity exec --bind /projects/fs1/ ${singularity_contatiner} python ${script
   --forcefastqnames ${forcefastqnames} \
   --forcebamnames ${forcebamnames} \
   --allowdupsoverlanes ${allowdupsoverlanes} \
-  --collapselanes ${collapselanes} > parse-samplesheet.log
+  --collapselanes ${collapselanes} > ctg.log.parse-samplesheet
 
 exit_code=$(echo $?)
 if [[ ${exit_code} != 0 ]]; then
