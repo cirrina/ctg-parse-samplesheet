@@ -291,8 +291,9 @@ print(f' ... ... ok')
 ##  write CTG_SampleSheet.rawdata.cfg and exit
 # =========================================================================
 # if header_pipelinename=='seqonly' and header_pipelineprofile in ['rawdata_runfolder','rawdata']:
-if header_pipelineprofile in ['rawdata_runfolder','rawdata']:
+if header_pipelineprofile in ['rawdata','rawdata_runfolder',] or header_pipelineprofile in ['rawdata_runfolder','rawdata']:
     print(f' ... Pipeline profile is set to rawdata delivery. ')
+    print(f' ... PipelineProfile:  ${header_pipelineprofile}. ')
 
     ## extract the important
     sheet_out = f'CTG_SampleSheet.rawdata.csv' # the runfolder is added to samplesheet name. defaults to current dir.
@@ -301,14 +302,15 @@ if header_pipelineprofile in ['rawdata_runfolder','rawdata']:
     writer = csv.writer(fh_out, lineterminator='\n')
     print(f' ... writing rawdata samplesheet:  {sheet_out}')
 
-    
-    my_param = get_param(param_name='email-autodeliver', myDict=sectionDict['[Header]'])
-    if not my_param: my_param = get_param(param_name='email-ctg-bnf', myDict=sectionDict['[Header]'])
-    writer.writerow(['email-autodeliver',my_param])
-
+     
     ## Write ProjectID (projid)
     my_param = get_param(param_name='ProjectID', myDict=sectionDict['[Header]'])
     writer.writerow(['ProjectID',my_param])
+
+    ## Write email to primary delivery person (email-autodeliver or ctg-bnf person)
+    my_param = get_param(param_name='email-autodeliver', myDict=sectionDict['[Header]'])
+    if not my_param: my_param = get_param(param_name='email-ctg-bnf', myDict=sectionDict['[Header]'])
+    writer.writerow(['email-autodeliver',my_param])
 
     ## Write email-ctg (cc), i.e. additional email users at CTG, such as lab responsible person
     my_param = get_param(param_name='email-ctg-lab', myDict=sectionDict['[Header]'])
@@ -318,10 +320,9 @@ if header_pipelineprofile in ['rawdata_runfolder','rawdata']:
     writer.writerow(['autodeliver','y'])
 
     ## Write Pipeline name and Profile
-    my_param = get_param(param_name='PipelineName', myDict=sectionDict['[Header]'])
-    writer.writerow(['PipelineName',my_param])
-    my_param = get_param(param_name='PipelineProfile', myDict=sectionDict['[Header]'])
-    writer.writerow(['PipelineProfile',my_param])
+    writer.writerow(['PipelineName',header_pipelinename])
+    writer.writerow(['PipelineProfile',header_pipelineprofile])
+
 
     fh_out.close()
     print(f' ... ... ok')
