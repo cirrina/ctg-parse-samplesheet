@@ -302,8 +302,11 @@ if header_pipelineprofile in ['rawdata_only','rawdata','rawdata_runfolder'] or h
     writer = csv.writer(fh_out, lineterminator='\n')
     print(f' ... writing rawdata samplesheet:  {sheet_out}')
 
-     
-    ## Write ProjectID (projid)
+    ## Write RunFolder
+    my_param = get_param(param_name='RunFolder', myDict=sectionDict['[Header]'])
+    writer.writerow(['RunFolder',my_param])
+
+    ## Write ProjectID
     my_param = get_param(param_name='ProjectID', myDict=sectionDict['[Header]'])
     writer.writerow(['ProjectID',my_param])
 
