@@ -758,11 +758,11 @@ else:
             ## For a demux sheet, add the bcl2fastq arguments parameter
             ## not implemented yet, but a must if demux of runs that use index kits with different index lengths in same run
             ##  if so, multiple demux sheets must be generated
-            bcl2fastArgRow = ['']*n_columns
-            bcl2fastArgRow[0] = 'bcl2fastqArg'
-            bcl2fastArgRow[1] = ''
-            #if bcl2fastq_argument: bcl2fastArgRow[1] = bcl2fastq_argument
-            writer.writerow(bcl2fastArgRow)
+            # bcl2fastArgRow = ['']*n_columns
+            # bcl2fastArgRow[0] = 'bcl2fastqArg'
+            # bcl2fastArgRow[1] = ''
+            # #if bcl2fastq_argument: bcl2fastArgRow[1] = bcl2fastq_argument
+            # writer.writerow(bcl2fastArgRow)
 
             for row in sectionDict[s]: # step through all rows of the [Header] dict list
 
@@ -938,7 +938,7 @@ else:
 ## end else (if not) is rawdata delivery
 
 
-## Touch ctg.parse-samplesheet.done (used by ctg cronjob)
-runfolder="/projects/fs1/nas-sync/upload/" + cwd
-fname=runfolder_root + "/ctg.parse-samplesheet.done"
-open(fname,'w').close()
+## Touch ctg.parse-samplesheet.done (used by ctg cronjob). Not neeeded. the cron creates .labsheet.done instead
+# fname=runfolder_root + "/" + cwd + "/ctg.parse-samplesheet.done"
+# open(fname,'w').close()
+
