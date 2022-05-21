@@ -102,6 +102,7 @@ default_regexp='[^0-9a-zA-Z\_\.\-\+\@\(\)\;\,\'\"\| ]+'
 
 params_dict = {
     'ProjectID': {'DataCol': 'Sample_Project','Catenate': True,'RegExp': '[^0-9a-zA-Z\_\|]+','Controlled': False},
+    'Workflow': {'DataCol': 'Workflow','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineName': {'DataCol': 'PipelineName','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineVersion': {'DataCol': 'PipelineVersion','Catenate': False,'RegExp': '','Controlled': True},
     'PipelineProfile': {'DataCol': 'PipelineProfile','Catenate': False,'RegExp': '','Controlled': True},
@@ -269,6 +270,8 @@ print(f' ... Checking Pipeline & Profile in [Header]')
 name_found=False  ## PipelineName is required
 profile_found=False ## PipelineProfile is required
 for row in sectionDict['[Header]']:
+    if row == 'Workflow':
+        header_workflow = sectionDict['[Header]'][row][1]
     if row == 'PipelineName':
         header_pipelinename = sectionDict['[Header]'][row][1]
         print(f' ... ... PipelineName: {header_pipelinename}')
@@ -282,7 +285,7 @@ for row in sectionDict['[Header]']:
         # if not header_pipelineprofile in pipelineDict[header_pipelinename]:
         #     raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
 if not name_found: raise ValueError('[Header] param "PipelineName" must be specified' )
-if not profile_found: raise ValueError('[Header] param "PipelineProfile" must be specified' )
+# if not profile_found: raise ValueError('[Header] param "PipelineProfile" must be specified' )
 print(f' ... ... ok')
 
 
@@ -323,6 +326,7 @@ if header_pipelinename in ['rawdata_only','rawdata','rawdata_runfolder'] or head
     writer.writerow(['autodeliver','y'])
 
     ## Write Pipeline name and Profile
+    writer.writerow(['Workflow',header_workflow])
     writer.writerow(['PipelineName',header_pipelinename])
     writer.writerow(['PipelineProfile',header_pipelineprofile])
 
