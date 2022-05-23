@@ -304,7 +304,7 @@ if header_pipelinename in ['rawdata_only','rawdata','rawdata_runfolder'] or head
     print(f' ... PipelineProfile:  ${header_pipelineprofile}. ')
 
     ## extract the important
-    sheet_out = f'CTG_SampleSheet.rawdata.csv' # the runfolder is added to samplesheet name. defaults to current dir.
+    sheet_out = f'CTG_SampleSheet.rawdata_only.csv' # the runfolder is added to samplesheet name. defaults to current dir.
     fh_out = open(sheet_out,'w', encoding='utf-8')
     # create the csv writer
     writer = csv.writer(fh_out, lineterminator='\n')
