@@ -267,11 +267,16 @@ print(f' ... ... ok')
 # # Read & check Pipeline & Profile. (check allowed values when writing project specific sheet)
 # # =========================================================================
 print(f' ... Checking Pipeline & Profile in [Header]')
+header_workflow=''
+header_pipelinename=''
+header_pipelineprofile=''
+
 name_found=False  ## PipelineName is required
 profile_found=False ## PipelineProfile is required
 for row in sectionDict['[Header]']:
     if row == 'Workflow':
         header_workflow = sectionDict['[Header]'][row][1]
+        print(f' ... ... Workflow: {header_workflow}')
     if row == 'PipelineName':
         header_pipelinename = sectionDict['[Header]'][row][1]
         print(f' ... ... PipelineName: {header_pipelinename}')
