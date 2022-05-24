@@ -83,7 +83,7 @@ sectionDict = {
     }
 
 ## Pipeline dict. check allowed Pipeline & pipeline profiles
-pipelineDict = {
+lookup_pipelines = {
     'seqonly': ['bcl2fastq_default','fastq_demux','rawdata_runfolder'],
     'ctg-rnaseq': ['rnaseq_mrna','rnaseq_total','uroscan','fastq_demux','rawdata_runfolder','rawdata'],
     'dna-dragen': ['panel_twist_comprehensive_dragen','panel_gmck_dragen','panel_gms_dragen','bam_alignment_dragen','wgs_dragen'],
@@ -281,14 +281,14 @@ for row in sectionDict['[Header]']:
         header_pipelinename = sectionDict['[Header]'][row][1]
         print(f' ... ... PipelineName: {header_pipelinename}')
         name_found=True
-        # if not header_pipelinename in pipelineDict.keys():
-        #     raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {pipelineDict.keys()}' )
+        # if not header_pipelinename in lookup_pipelines.keys():
+        #     raise ValueError(f'[Header] param "PipelineName" incorrectly specified. Must be one of {lookup_pipelines.keys()}' )
     if row == 'PipelineProfile':
         header_pipelineprofile = sectionDict['[Header]'][row][1]
         print(f' ... ... PipelineProfile: {header_pipelineprofile}')
         profile_found=True
-        # if not header_pipelineprofile in pipelineDict[header_pipelinename]:
-        #     raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {pipelineDict[header_pipelinename]}' )
+        # if not header_pipelineprofile in lookup_pipelines[header_pipelinename]:
+        #     raise ValueError(f'[Header] param "PipelineProfile" incorrectly specified. Must be one of {lookup_pipelines[header_pipelinename]}' )
 if not name_found: raise ValueError('[Header] param "PipelineName" must be specified' )
 # if not profile_found: raise ValueError('[Header] param "PipelineProfile" must be specified' )
 print(f' ... ... ok')
